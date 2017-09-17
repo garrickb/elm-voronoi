@@ -1,0 +1,10 @@
+var _garrickb$elm_voronoi$View$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Hello World'),
+			_1: {ctor: '[]'}
+		});
+};

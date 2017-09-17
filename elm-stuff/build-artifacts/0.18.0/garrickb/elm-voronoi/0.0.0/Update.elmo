@@ -1,0 +1,15 @@
+var _garrickb$elm_voronoi$Update$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		var _p1 = model.distance;
+		if (_p1.ctor === 'Euclidean') {
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{distance: _garrickb$elm_voronoi$Model$Manhattan});
+		} else {
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{distance: _garrickb$elm_voronoi$Model$Euclidean});
+		}
+	});
+var _garrickb$elm_voronoi$Update$ToggleDistance = {ctor: 'ToggleDistance'};
