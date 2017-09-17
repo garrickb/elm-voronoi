@@ -1,2 +1,0 @@
-var _garrickb$elm_voronoi$Main$main = _elm_lang$html$Html$beginnerProgram(
-	{model: _garrickb$elm_voronoi$Model$init, view: _garrickb$elm_voronoi$View$view, update: _garrickb$elm_voronoi$Update$update})();

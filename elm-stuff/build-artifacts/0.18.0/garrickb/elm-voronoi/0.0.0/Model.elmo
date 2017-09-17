@@ -1,6 +1,0 @@
-var _garrickb$elm_voronoi$Model$Model = function (a) {
-	return {distance: a};
-};
-var _garrickb$elm_voronoi$Model$Manhattan = {ctor: 'Manhattan'};
-var _garrickb$elm_voronoi$Model$Euclidean = {ctor: 'Euclidean'};
-var _garrickb$elm_voronoi$Model$init = {distance: _garrickb$elm_voronoi$Model$Euclidean};
