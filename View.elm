@@ -15,7 +15,7 @@ view : Model -> Html Update.Msg
 view model =
     div [ Html.Attributes.style [ ( "text-align", "center" ) ] ]
         [ h2 []
-            [ Html.text "Voronoi" ]
+            [ Html.text "Hey, it does a thing!" ]
         , div []
             [ svg
                 [ width (Basics.toString Constants.viewSize)
