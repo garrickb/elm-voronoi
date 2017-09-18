@@ -1,5 +1,6 @@
 module Model exposing (..)
 
+import Math.Vector2 exposing (Vec2)
 import Random.Pcg exposing (..)
 import Svg exposing (..)
 
@@ -8,15 +9,9 @@ type alias Point msg =
     Svg msg
 
 
-type alias Position =
-    { x : Float
-    , y : Float
-    }
-
-
 type alias Model =
     { distance : Distance
-    , points : List Position
+    , points : List Vec2
     , seed : Seed
     }
 

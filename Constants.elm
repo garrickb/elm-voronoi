@@ -2,15 +2,19 @@ module Constants exposing (..)
 
 
 coordinateBufferZone =
-    5
+    1
 
 
 dotFill =
-    "black"
+    "red"
 
 
 dotRadius =
     "0.5"
+
+
+lineWidth =
+    "0.1"
 
 
 realSize =

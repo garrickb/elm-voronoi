@@ -1,13 +1,14 @@
 module Update exposing (..)
 
 import Constants
+import Math.Vector2 exposing (Vec2, vec2)
 import Model exposing (..)
 import Random.Pcg exposing (..)
 
 
 type Msg
     = ToggleDistance
-    | AddPosition ( ( Float, Float ), Seed )
+    | AddPoint ( ( Float, Float ), Seed )
 
 
 update : Msg -> Model -> Model
@@ -15,24 +16,24 @@ update msg model =
     case msg of
         ToggleDistance ->
             case model.distance of
-                Model.Euclidean ->
-                    { model | distance = Model.Manhattan }
+                Euclidean ->
+                    { model | distance = Manhattan }
 
-                Model.Manhattan ->
-                    { model | distance = Model.Euclidean }
+                Manhattan ->
+                    { model | distance = Euclidean }
 
-        AddPosition data ->
-            addPosition data model |> updateSeed data
-
-
-addPosition : ( ( Float, Float ), Seed ) -> Model -> Model
-addPosition random model =
-    { model | points = getPositionFromRandom random :: model.points }
+        AddPoint data ->
+            addPoint data model |> updateSeed data
 
 
-getPositionFromRandom : ( ( Float, Float ), Seed ) -> Position
-getPositionFromRandom random =
-    Position
+addPoint : ( ( Float, Float ), Seed ) -> Model -> Model
+addPoint random model =
+    { model | points = getVecFromRandom random :: model.points }
+
+
+getVecFromRandom : ( ( Float, Float ), Seed ) -> Vec2
+getVecFromRandom random =
+    vec2
         (toFloat <|
             round
                 (Tuple.first <| Tuple.first random)
@@ -59,6 +60,6 @@ coordinateGenerator =
         )
 
 
-randomCoordinate : Model -> ( ( Float, Float ), Seed )
-randomCoordinate model =
+randomVec : Model -> ( ( Float, Float ), Seed )
+randomVec model =
     step coordinateGenerator model.seed
