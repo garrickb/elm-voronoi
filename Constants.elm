@@ -1,11 +1,21 @@
 module Constants exposing (..)
 
 
-viewSize : Float
-viewSize =
-    500
+coordinateBufferZone =
+    5
 
 
-realSize : Float
+dotFill =
+    "black"
+
+
+dotRadius =
+    "0.5"
+
+
 realSize =
     100
+
+
+viewSize =
+    500

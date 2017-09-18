@@ -26,23 +26,37 @@ update msg model =
 
 
 addPosition : ( ( Float, Float ), Seed ) -> Model -> Model
-addPosition data model =
-    { model
-        | points =
-            Position (Tuple.first <| Tuple.first data)
-                (Tuple.second <| Tuple.first data)
-                :: model.points
-    }
+addPosition random model =
+    { model | points = getPositionFromRandom random :: model.points }
+
+
+getPositionFromRandom : ( ( Float, Float ), Seed ) -> Position
+getPositionFromRandom random =
+    Position
+        (toFloat <|
+            round
+                (Tuple.first <| Tuple.first random)
+        )
+        (toFloat <|
+            round
+                (Tuple.second <| Tuple.first random)
+        )
 
 
 updateSeed : ( ( Float, Float ), Seed ) -> Model -> Model
-updateSeed data model =
-    { model | seed = Tuple.second data }
+updateSeed random model =
+    { model | seed = Tuple.second random }
 
 
 coordinateGenerator : Generator ( Float, Float )
 coordinateGenerator =
-    pair (float 5 (Constants.realSize - 5)) (float 5 (Constants.realSize - 5))
+    pair
+        (float Constants.coordinateBufferZone
+            (Constants.realSize - Constants.coordinateBufferZone)
+        )
+        (float Constants.coordinateBufferZone
+            (Constants.realSize - Constants.coordinateBufferZone)
+        )
 
 
 randomCoordinate : Model -> ( ( Float, Float ), Seed )

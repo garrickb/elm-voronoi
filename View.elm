@@ -45,7 +45,7 @@ point pos =
     circle
         [ cx <| Basics.toString <| pos.x
         , cy <| Basics.toString <| pos.y
-        , r "1"
-        , fill "black"
+        , r Constants.dotRadius
+        , fill Constants.dotFill
         ]
         []
