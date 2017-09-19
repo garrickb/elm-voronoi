@@ -1,11 +1,13 @@
 module View exposing (..)
 
+import Char
+import Color exposing (Color)
 import Constants
 import Html exposing (..)
 import Html.Attributes
 import Html.Events
 import Math.Vector2 exposing (Vec2, vec2)
-import Model exposing (Model, Point)
+import Model exposing (Model)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Update
@@ -30,8 +32,8 @@ view model =
                     [ ( "border", "1px solid black" ) ]
                 ]
                 [ g
-                    [ Svg.Attributes.name "lines" ]
-                    (connectPoints model.points)
+                    [ Svg.Attributes.name "naive" ]
+                    (naiveVoronoi model.points (Constants.realSize ^ 2))
                 , g
                     [ Svg.Attributes.name "points" ]
                     (points model.points)
@@ -41,6 +43,47 @@ view model =
             [ Html.Events.onClick (Update.AddPoint (Update.randomVec model)) ]
             [ Html.text "Add Random Point" ]
         ]
+
+
+
+-- Naive - Find set every pixel's color to closest point
+
+
+naiveVoronoi : List Vec2 -> Int -> List (Svg msg)
+naiveVoronoi points index =
+    if index == -1 then
+        []
+    else if List.isEmpty points then
+        []
+    else
+        List.append (naiveVoronoiPoint (intToPosition index)) (naiveVoronoi points (index - 1))
+
+
+intToPosition : Int -> Vec2
+intToPosition i =
+    vec2 (Basics.toFloat (i % Constants.realSize)) (Basics.toFloat (i // Constants.realSize))
+
+
+naiveVoronoiPoint : Vec2 -> List (Svg msg)
+naiveVoronoiPoint pos =
+    [ drawPixel pos (Color.rgb 0 255 0) ]
+
+
+closestPoint : Vec2 -> Vec2
+closestPoint point =
+    vec2 0 0
+
+
+drawPixel : Vec2 -> Color -> Svg msg
+drawPixel position pointColor =
+    rect
+        [ x <| Basics.toString <| Math.Vector2.getX position
+        , y <| Basics.toString <| Math.Vector2.getY position
+        , width "1"
+        , height "1"
+        , fill (colorToHex pointColor)
+        ]
+        []
 
 
 
@@ -87,7 +130,7 @@ points points =
     List.map point points
 
 
-point : Vec2 -> Point msg
+point : Vec2 -> Svg msg
 point pos =
     circle
         [ cx <| Basics.toString <| Math.Vector2.getX pos
@@ -96,3 +139,43 @@ point pos =
         , fill Constants.dotFill
         ]
         []
+
+
+
+-- Util
+
+
+colorToHex : Color -> String
+colorToHex cl =
+    let
+        { red, green, blue, alpha } =
+            Color.toRgb cl
+    in
+    "#" ++ toHex red ++ toHex green ++ toHex blue
+
+
+toHex : Int -> String
+toHex n =
+    let
+        hex =
+            toRadix n
+    in
+    if String.length hex == 1 then
+        "0" ++ hex
+    else
+        hex
+
+
+toRadix : Int -> String
+toRadix n =
+    let
+        getChr c =
+            if c < 10 then
+                toString c
+            else
+                String.fromChar <| Char.fromCode (87 + c)
+    in
+    if n < 16 then
+        getChr n
+    else
+        toRadix (n // 16) ++ getChr (n % 16)
