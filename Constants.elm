@@ -5,16 +5,8 @@ coordinateBufferZone =
     1
 
 
-dotFill =
-    "red"
-
-
-dotRadius =
-    "0.25"
-
-
-dotBorder =
-    "0.25"
+pointColorMult =
+    0.5
 
 
 lineWidth =

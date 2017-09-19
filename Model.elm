@@ -25,5 +25,5 @@ init : Model
 init =
     { distance = Euclidean
     , points = []
-    , seed = initialSeed 1234567890
+    , seed = initialSeed 3178909195
     }
