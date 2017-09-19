@@ -32,11 +32,11 @@ view model =
                     [ ( "border", "1px solid black" ) ]
                 ]
                 [ g
-                    [ Svg.Attributes.name "naive" ]
+                    [ Svg.Attributes.name "naiveVoronoi" ]
                     (naiveVoronoi model (Constants.realSize ^ 2))
                 , g
                     [ Svg.Attributes.name "points" ]
-                    (points model.points)
+                    (points model)
                 ]
             ]
         , Html.button
@@ -57,7 +57,7 @@ view model =
 
 
 
--- Naive - Find set every pixel's color to closest point
+-- Naive - Find set every pixel's color to closest point.
 
 
 naiveVoronoi : Model -> Int -> List (Svg msg)
@@ -67,7 +67,8 @@ naiveVoronoi model index =
     else if List.isEmpty model.points then
         []
     else
-        List.append (naiveVoronoiPoint <| intToPoint model index) (naiveVoronoi model (index - 1))
+        List.append (naiveVoronoiPoint <| intToPoint model index)
+            (naiveVoronoi model (index - 1))
 
 
 intToPoint : Model -> Int -> Point
@@ -90,9 +91,7 @@ naiveVoronoiPoint point =
 
 closestPoint : Model -> Vec2 -> Point
 closestPoint model point =
-    Maybe.withDefault
-        (Point (vec2 0 0) (Color.rgb 0 0 0))
-    <|
+    Maybe.withDefault defaultPoint <|
         List.head <|
             List.sortBy (distance model.distance point) model.points
 
@@ -124,64 +123,76 @@ drawVoronoiPoint point =
 
 
 
--- connectAll - Doing this one just for some practice. Connects all nodes together.
+-- connectAll - Connects all nodes together.
 
 
-connectPoints : List Vec2 -> List (Svg msg)
-connectPoints points =
-    if List.isEmpty points then
+connectPoints : Model -> List (Svg msg)
+connectPoints model =
+    if List.isEmpty model.points then
         []
     else
-        List.append (connectPoint points) (connectPoints (List.drop 1 points))
+        List.append (connectPoint model)
+            (connectPoints { model | points = List.drop 1 model.points })
 
 
-connectPoint : List Vec2 -> List (Svg msg)
-connectPoint point =
-    connect (List.head point) (List.tail point)
+connectPoint : Model -> List (Svg msg)
+connectPoint model =
+    connect (List.head model.points) (List.tail model.points)
 
 
-connect : Maybe Vec2 -> Maybe (List Vec2) -> List (Svg msg)
+connect : Maybe Point -> Maybe (List Point) -> List (Svg msg)
 connect current remaining =
-    List.map (drawLine (current |> Maybe.withDefault (vec2 0 0))) (remaining |> Maybe.withDefault [])
+    List.map (drawLine (current |> Maybe.withDefault defaultPoint))
+        (remaining |> Maybe.withDefault [])
 
 
-drawLine : Vec2 -> Vec2 -> Svg msg
+drawLine : Point -> Point -> Svg msg
 drawLine vecOne vecTwo =
     line
         [ stroke "grey"
         , strokeWidth Constants.lineWidth
-        , x1 (toString (Math.Vector2.getX vecOne))
-        , x2 (toString (Math.Vector2.getX vecTwo))
-        , y1 (toString (Math.Vector2.getY vecOne))
-        , y2 (toString (Math.Vector2.getY vecTwo))
+        , x1 (toString (Math.Vector2.getX vecOne.pos))
+        , x2 (toString (Math.Vector2.getX vecTwo.pos))
+        , y1 (toString (Math.Vector2.getY vecOne.pos))
+        , y2 (toString (Math.Vector2.getY vecTwo.pos))
         ]
         []
 
 
 
--- Points
+-- Points - Draws points.
 
 
-points : List Point -> List (Svg msg)
-points points =
-    List.map point points
+points : Model -> List (Svg msg)
+points model =
+    List.map point model.points
 
 
 point : Point -> Svg msg
 point point =
-    circle
-        [ cx <| Basics.toString <| Math.Vector2.getX point.pos
-        , cy <| Basics.toString <| Math.Vector2.getY point.pos
-        , r Constants.dotRadius
-        , stroke "black"
-        , strokeWidth Constants.dotBorder
-        , fill <| colorToHex point.color
+    rect
+        [ x <| Basics.toString <| Math.Vector2.getX point.pos
+        , y <| Basics.toString <| Math.Vector2.getY point.pos
+        , width "1"
+        , height "1"
+        , fill <|
+            colorToHex
+                (Color.rgb
+                    (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).red))
+                    (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).green))
+                    (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).blue))
+                )
         ]
         []
 
 
 
 -- Util
+
+
+defaultPoint : Point
+defaultPoint =
+    Point (vec2 0 0) (Color.rgb 0 0 0)
 
 
 colorToHex : Color -> String
