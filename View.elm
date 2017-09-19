@@ -7,7 +7,7 @@ import Html exposing (..)
 import Html.Attributes
 import Html.Events
 import Math.Vector2 exposing (Vec2, vec2)
-import Model exposing (Model)
+import Model exposing (Distance, Model, Point)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Update
@@ -17,7 +17,7 @@ view : Model -> Html Update.Msg
 view model =
     div [ Html.Attributes.style [ ( "text-align", "center" ) ] ]
         [ h2 []
-            [ Html.text "Hey, it does a thing!" ]
+            [ Html.text "Voronoi Diagram" ]
         , div []
             [ svg
                 [ width (Basics.toString Constants.viewSize)
@@ -33,15 +33,26 @@ view model =
                 ]
                 [ g
                     [ Svg.Attributes.name "naive" ]
-                    (naiveVoronoi model.points (Constants.realSize ^ 2))
+                    (naiveVoronoi model (Constants.realSize ^ 2))
                 , g
                     [ Svg.Attributes.name "points" ]
                     (points model.points)
                 ]
             ]
         , Html.button
-            [ Html.Events.onClick (Update.AddPoint (Update.randomVec model)) ]
+            [ Html.Events.onClick (Update.AddPoint (Update.randomPoint model)) ]
             [ Html.text "Add Random Point" ]
+        , Html.button
+            [ Html.Events.onClick Update.ToggleDistance ]
+            [ Html.text
+                (case model.distance of
+                    Model.Euclidean ->
+                        "Switch to Manhattan Distance Formula"
+
+                    Model.Manhattan ->
+                        "Switch to Euclidean Distance Formula"
+                )
+            ]
         ]
 
 
@@ -49,39 +60,65 @@ view model =
 -- Naive - Find set every pixel's color to closest point
 
 
-naiveVoronoi : List Vec2 -> Int -> List (Svg msg)
-naiveVoronoi points index =
+naiveVoronoi : Model -> Int -> List (Svg msg)
+naiveVoronoi model index =
     if index == -1 then
         []
-    else if List.isEmpty points then
+    else if List.isEmpty model.points then
         []
     else
-        List.append (naiveVoronoiPoint (intToPosition index)) (naiveVoronoi points (index - 1))
+        List.append (naiveVoronoiPoint <| intToPoint model index) (naiveVoronoi model (index - 1))
 
 
-intToPosition : Int -> Vec2
-intToPosition i =
-    vec2 (Basics.toFloat (i % Constants.realSize)) (Basics.toFloat (i // Constants.realSize))
+intToPoint : Model -> Int -> Point
+intToPoint model i =
+    Point
+        (vec2 (Basics.toFloat (i % Constants.realSize))
+            (Basics.toFloat (i // Constants.realSize))
+        )
+        (closestPoint model
+            (vec2 (Basics.toFloat (i % Constants.realSize))
+                (Basics.toFloat (i // Constants.realSize))
+            )
+        ).color
 
 
-naiveVoronoiPoint : Vec2 -> List (Svg msg)
-naiveVoronoiPoint pos =
-    [ drawPixel pos (Color.rgb 0 255 0) ]
+naiveVoronoiPoint : Point -> List (Svg msg)
+naiveVoronoiPoint point =
+    [ drawVoronoiPoint point ]
 
 
-closestPoint : Vec2 -> Vec2
-closestPoint point =
-    vec2 0 0
+closestPoint : Model -> Vec2 -> Point
+closestPoint model point =
+    Maybe.withDefault
+        (Point (vec2 0 0) (Color.rgb 0 0 0))
+    <|
+        List.head <|
+            List.sortBy (distance model.distance point) model.points
 
 
-drawPixel : Vec2 -> Color -> Svg msg
-drawPixel position pointColor =
+distance : Distance -> Vec2 -> Point -> Float
+distance distForm a b =
+    case distForm of
+        Model.Euclidean ->
+            sqrt
+                (((Math.Vector2.getX a - Math.Vector2.getX b.pos) ^ 2)
+                    + ((Math.Vector2.getY a - Math.Vector2.getY b.pos) ^ 2)
+                )
+
+        Model.Manhattan ->
+            abs (Math.Vector2.getX a - Math.Vector2.getX b.pos)
+                + abs (Math.Vector2.getY a - Math.Vector2.getY b.pos)
+
+
+drawVoronoiPoint : Point -> Svg msg
+drawVoronoiPoint point =
     rect
-        [ x <| Basics.toString <| Math.Vector2.getX position
-        , y <| Basics.toString <| Math.Vector2.getY position
+        [ x <| Basics.toString <| Math.Vector2.getX point.pos
+        , y <| Basics.toString <| Math.Vector2.getY point.pos
         , width "1"
         , height "1"
-        , fill (colorToHex pointColor)
+        , fill <| colorToHex point.color
         ]
         []
 
@@ -125,18 +162,20 @@ drawLine vecOne vecTwo =
 -- Points
 
 
-points : List Vec2 -> List (Svg msg)
+points : List Point -> List (Svg msg)
 points points =
     List.map point points
 
 
-point : Vec2 -> Svg msg
-point pos =
+point : Point -> Svg msg
+point point =
     circle
-        [ cx <| Basics.toString <| Math.Vector2.getX pos
-        , cy <| Basics.toString <| Math.Vector2.getY pos
+        [ cx <| Basics.toString <| Math.Vector2.getX point.pos
+        , cy <| Basics.toString <| Math.Vector2.getY point.pos
         , r Constants.dotRadius
-        , fill Constants.dotFill
+        , stroke "black"
+        , strokeWidth Constants.dotBorder
+        , fill <| colorToHex point.color
         ]
         []
 

@@ -3,7 +3,6 @@ module Model exposing (..)
 import Color exposing (Color)
 import Math.Vector2 exposing (Vec2)
 import Random.Pcg exposing (..)
-import Svg exposing (..)
 
 
 type alias Point =
@@ -12,7 +11,7 @@ type alias Point =
 
 type alias Model =
     { distance : Distance
-    , points : List Vec2
+    , points : List Point
     , seed : Seed
     }
 

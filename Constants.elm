@@ -10,7 +10,11 @@ dotFill =
 
 
 dotRadius =
-    "0.5"
+    "0.25"
+
+
+dotBorder =
+    "0.25"
 
 
 lineWidth =
@@ -18,7 +22,7 @@ lineWidth =
 
 
 realSize =
-    25
+    50
 
 
 viewSize =
