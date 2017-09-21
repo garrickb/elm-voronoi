@@ -33,7 +33,7 @@ view model =
                 ]
                 [ g
                     [ Svg.Attributes.name "naiveVoronoi" ]
-                    (naiveVoronoi model (Constants.realSize ^ 2))
+                    (naiveVoronoi model)
                 , g
                     [ Svg.Attributes.name "points" ]
                     (points model)
@@ -60,33 +60,28 @@ view model =
 -- Naive - Find set every pixel's color to closest point.
 
 
-naiveVoronoi : Model -> Int -> List (Svg msg)
-naiveVoronoi model index =
-    if index == -1 then
-        []
-    else if List.isEmpty model.points then
-        []
-    else
-        List.append (naiveVoronoiPoint <| intToPoint model index)
-            (naiveVoronoi model (index - 1))
+naiveVoronoi : Model -> List (Svg msg)
+naiveVoronoi model =
+    List.map (naiveVoronoiRow model)
+        (List.map Basics.toFloat (List.range 0 Constants.realSize))
 
 
-intToPoint : Model -> Int -> Point
-intToPoint model i =
-    Point
-        (vec2 (Basics.toFloat (i % Constants.realSize))
-            (Basics.toFloat (i // Constants.realSize))
+naiveVoronoiRow : Model -> Float -> Svg msg
+naiveVoronoiRow model row =
+    g
+        []
+        (List.map
+            (naiveVoronoiPoint model row)
+            (List.map Basics.toFloat (List.range 0 Constants.realSize))
         )
-        (closestPoint model
-            (vec2 (Basics.toFloat (i % Constants.realSize))
-                (Basics.toFloat (i // Constants.realSize))
-            )
-        ).color
 
 
-naiveVoronoiPoint : Point -> List (Svg msg)
-naiveVoronoiPoint point =
-    [ drawVoronoiPoint point ]
+naiveVoronoiPoint : Model -> Float -> Float -> Svg msg
+naiveVoronoiPoint model row col =
+    drawVoronoiPoint
+        (Point (vec2 row col)
+            (closestPoint model (vec2 row col)).color
+        )
 
 
 closestPoint : Model -> Vec2 -> Point

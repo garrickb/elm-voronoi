@@ -14,7 +14,7 @@ lineWidth =
 
 
 realSize =
-    50
+    200
 
 
 viewSize =
