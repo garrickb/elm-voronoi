@@ -187,7 +187,7 @@ point point =
 
 defaultPoint : Point
 defaultPoint =
-    Point (vec2 0 0) (Color.rgb 0 0 0)
+    Point (vec2 0 0) (Color.rgb 255 255 255)
 
 
 colorToHex : Color -> String
