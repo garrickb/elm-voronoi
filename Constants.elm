@@ -13,7 +13,7 @@ lineWidth =
     "0.1"
 
 
-realSize =
+size =
     100
 
 

@@ -51,10 +51,10 @@ coordinateGenerator : Generator Vec2
 coordinateGenerator =
     map2 vec2
         (float Constants.coordinateBufferZone
-            (Constants.realSize - Constants.coordinateBufferZone)
+            (Constants.size - Constants.coordinateBufferZone)
         )
         (float Constants.coordinateBufferZone
-            (Constants.realSize - Constants.coordinateBufferZone)
+            (Constants.size - Constants.coordinateBufferZone)
         )
 
 

@@ -6,8 +6,8 @@ import Constants
 import Html exposing (..)
 import Html.Attributes
 import Html.Events
-import Math.Vector2 exposing (Vec2, vec2)
-import Model exposing (Distance, Model, Point)
+import Math.Vector2 exposing (Vec2, getX, getY, vec2)
+import Model exposing (Circle, DelunayTriangle, Distance, Model, Point, Triangle)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Update
@@ -24,9 +24,9 @@ view model =
                 , height (Basics.toString Constants.viewSize)
                 , viewBox
                     ("0 0 "
-                        ++ Basics.toString Constants.realSize
+                        ++ Basics.toString Constants.size
                         ++ " "
-                        ++ Basics.toString Constants.realSize
+                        ++ Basics.toString Constants.size
                     )
                 , Html.Attributes.style
                     [ ( "border", "1px solid black" ) ]
@@ -57,13 +57,122 @@ view model =
 
 
 
--- Naive - Find set every pixel's color to closest point.
+-- Delaunay Triangulation - Calculate using the Bowyer-Watson algorithm.
+
+
+drawDelaunay : List DelunayTriangle -> List (Svg msg)
+drawDelaunay del =
+    [ drawTriangles del
+    , drawCircles del
+    ]
+
+
+drawTriangles : List DelunayTriangle -> Svg msg
+drawTriangles del =
+    g
+        [ Svg.Attributes.name "triangles" ]
+        (List.map
+            drawTriangle
+            del
+        )
+
+
+drawCircles : List DelunayTriangle -> Svg msg
+drawCircles del =
+    g
+        [ Svg.Attributes.name "circles" ]
+        (List.map drawCircle del)
+
+
+drawCircle : DelunayTriangle -> Svg msg
+drawCircle del =
+    Svg.circle
+        [ cx (Basics.toString (getX del.circle.center))
+        , cy (Basics.toString (getY del.circle.center))
+        , r (Basics.toString del.circle.radius)
+        ]
+        []
+
+
+drawTriangle : DelunayTriangle -> Svg msg
+drawTriangle del =
+    polyline
+        [ fill (colorToHex del.triangle.a.color)
+        , stroke "black"
+        , Svg.Attributes.points (getTriPoints del.triangle)
+        ]
+        []
+
+
+getTriPoints : Triangle -> String
+getTriPoints tri =
+    List.map pointToString [ tri.a, tri.b, tri.c ]
+        |> List.intersperse " "
+        |> String.concat
+
+
+pointToString : Point -> String
+pointToString point =
+    String.concat
+        (List.intersperse
+            ","
+            [ Basics.toString (getX point.pos)
+            , Basics.toString (getY point.pos)
+            ]
+        )
+
+
+calcCircle : Triangle -> DelunayTriangle
+calcCircle tri =
+    DelunayTriangle tri
+        (Circle
+            (getCircumcenter tri)
+            (distanceEuclidean (getCircumcenter tri) tri.a.pos)
+        )
+
+
+circumcenterX : Triangle -> Float
+circumcenterX tri =
+    yIntercept tri.a.pos tri.b.pos
+        / (slope tri.b.pos tri.c.pos - slope tri.a.pos tri.b.pos)
+
+
+getCircumcenter : Triangle -> Vec2
+getCircumcenter tri =
+    vec2 (circumcenterX tri)
+        ((slope tri.a.pos tri.b.pos * circumcenterX tri)
+            + yIntercept tri.a.pos tri.b.pos
+        )
+
+
+midpoint : Vec2 -> Vec2 -> Vec2
+midpoint a b =
+    vec2 ((getX a + getX b) / 2) ((getY a + getY b) / 2)
+
+
+yIntercept : Vec2 -> Vec2 -> Float
+yIntercept a b =
+    getY (midpoint a b) - slope a b * getX (midpoint a b)
+
+
+slope : Vec2 -> Vec2 -> Float
+slope from to =
+    (getY to - getY from) / (getX to - getX from)
+
+
+isInCircle : Vec2 -> Circle -> Bool
+isInCircle point circle =
+    distanceEuclidean point circle.center < circle.radius
+
+
+
+-- Naive - Set every pixel's color to closest point.
 
 
 naiveVoronoi : Model -> List (Svg msg)
 naiveVoronoi model =
     List.map (naiveVoronoiRow model)
-        (List.map Basics.toFloat (List.range 0 Constants.realSize))
+        (List.map Basics.toFloat (List.range 0 Constants.size))
 
 
 naiveVoronoiRow : Model -> Float -> Svg msg
@@ -72,7 +181,7 @@ naiveVoronoiRow model row =
         []
         (List.map
             (naiveVoronoiPoint model row)
-            (List.map Basics.toFloat (List.range 0 Constants.realSize))
+            (List.map Basics.toFloat (List.range 0 Constants.size))
         )
 
 
@@ -95,21 +204,17 @@ distance : Distance -> Vec2 -> Point -> Float
 distance distForm a b =
     case distForm of
         Model.Euclidean ->
-            sqrt
-                (((Math.Vector2.getX a - Math.Vector2.getX b.pos) ^ 2)
-                    + ((Math.Vector2.getY a - Math.Vector2.getY b.pos) ^ 2)
-                )
+            distanceEuclidean a b.pos
 
         Model.Manhattan ->
-            abs (Math.Vector2.getX a - Math.Vector2.getX b.pos)
-                + abs (Math.Vector2.getY a - Math.Vector2.getY b.pos)
+            distanceManhattan a b.pos
 
 
 drawVoronoiPoint : Point -> Svg msg
 drawVoronoiPoint point =
     rect
-        [ x <| Basics.toString <| Math.Vector2.getX point.pos
-        , y <| Basics.toString <| Math.Vector2.getY point.pos
+        [ x <| Basics.toString <| getX point.pos
+        , y <| Basics.toString <| getY point.pos
         , width "1"
         , height "1"
         , fill <| colorToHex point.color
@@ -146,10 +251,10 @@ drawLine vecOne vecTwo =
     line
         [ stroke "grey"
         , strokeWidth Constants.lineWidth
-        , x1 (toString (Math.Vector2.getX vecOne.pos))
-        , x2 (toString (Math.Vector2.getX vecTwo.pos))
-        , y1 (toString (Math.Vector2.getY vecOne.pos))
-        , y2 (toString (Math.Vector2.getY vecTwo.pos))
+        , x1 (toString (getX vecOne.pos))
+        , x2 (toString (getX vecTwo.pos))
+        , y1 (toString (getY vecOne.pos))
+        , y2 (toString (getY vecTwo.pos))
         ]
         []
 
@@ -166,8 +271,8 @@ points model =
 point : Point -> Svg msg
 point point =
     rect
-        [ x <| Basics.toString <| Math.Vector2.getX point.pos
-        , y <| Basics.toString <| Math.Vector2.getY point.pos
+        [ x <| Basics.toString <| getX point.pos
+        , y <| Basics.toString <| getY point.pos
         , width "1"
         , height "1"
         , fill <|
@@ -183,6 +288,19 @@ point point =
 
 
 -- Util
+
+
+distanceEuclidean : Vec2 -> Vec2 -> Float
+distanceEuclidean a b =
+    sqrt
+        (((getX a - getX b) ^ 2)
+            + ((getY a - getY b) ^ 2)
+        )
+
+
+distanceManhattan : Vec2 -> Vec2 -> Float
+distanceManhattan a b =
+    abs (getX a - getX b) + abs (getY a - getY b)
 
 
 defaultPoint : Point
