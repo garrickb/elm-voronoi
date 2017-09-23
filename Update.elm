@@ -10,6 +10,7 @@ import Random.Pcg exposing (..)
 type Msg
     = ToggleDistance
     | AddPoint ( Point, Seed )
+    | SetTriangles (List DelaunayTriangle)
 
 
 update : Msg -> Model -> Model
@@ -21,10 +22,16 @@ update msg model =
                     { model | distance = Manhattan }
 
                 Manhattan ->
+                    { model | distance = Chebyshev }
+
+                Chebyshev ->
                     { model | distance = Euclidean }
 
         AddPoint data ->
             addPoint data model |> updateSeed data
+
+        SetTriangles del ->
+            { model | triangles = del }
 
 
 addPoint : ( Point, Seed ) -> Model -> Model

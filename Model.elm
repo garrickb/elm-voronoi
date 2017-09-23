@@ -10,7 +10,7 @@ type alias Point =
     { pos : Vec2, color : Color }
 
 
-type alias DelunayTriangle =
+type alias DelaunayTriangle =
     { triangle : Triangle, circle : Circle }
 
 
@@ -25,7 +25,7 @@ type alias Circle =
 type alias Model =
     { distance : Distance
     , points : List Point
-    , triangles : List DelunayTriangle
+    , triangles : List DelaunayTriangle
     , seed : Seed
     }
 
@@ -33,17 +33,13 @@ type alias Model =
 type Distance
     = Euclidean
     | Manhattan
+    | Chebyshev
 
 
 init : Model
 init =
     { distance = Euclidean
-    , points =
-        [ Point (vec2 (size / 2) (-1 * size)) (Color.rgb 0 0 0)
-        , Point (vec2 (-1 * (size / 2)) size) (Color.rgb 0 0 0)
-        , Point (vec2 ((3 * size) / 2) size) (Color.rgb 0 0 0)
-        ]
-    , triangles =
-        []
+    , points = []
+    , triangles = []
     , seed = initialSeed 3178909195
     }

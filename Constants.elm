@@ -13,8 +13,12 @@ lineWidth =
     "0.1"
 
 
-size =
+svgSize =
     100
+
+
+size =
+    svgSize - 1
 
 
 viewSize =
