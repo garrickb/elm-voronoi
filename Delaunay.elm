@@ -49,15 +49,20 @@ drawCircles del =
 
 drawCircle : DelaunayTriangle -> Svg msg
 drawCircle del =
-    Svg.circle
-        [ cx (Basics.toString (getX del.circle.center))
-        , cy (Basics.toString (getY del.circle.center))
-        , r (Basics.toString del.circle.radius)
-        , fill "none"
-        , stroke "black"
-        , strokeWidth "0.25"
-        ]
-        []
+    case del.circle.center of
+        Nothing ->
+            g [] []
+
+        Just center ->
+            Svg.circle
+                [ cx (Basics.toString (getX center))
+                , cy (Basics.toString (getY center))
+                , r (Basics.toString del.circle.radius)
+                , fill "none"
+                , stroke "black"
+                , strokeWidth "0.25"
+                ]
+                []
 
 
 
@@ -94,12 +99,12 @@ calculateDelaunay model =
 getDelaunayTriangle : Triangle -> DelaunayTriangle
 getDelaunayTriangle tri =
     let
-        triCircumcenter =
-            getCircumcenter tri
+        circCenter =
+            findCircumcenter tri.a.pos tri.b.pos tri.c.pos
     in
     Circle
-        triCircumcenter
-        (distanceEuclidean triCircumcenter tri.a.pos)
+        circCenter
+        (distanceEuclidean (Maybe.withDefault (vec2 0 0) circCenter) tri.a.pos)
         |> DelaunayTriangle tri
 
 
@@ -112,8 +117,8 @@ slope from to =
         Just ((getY to - getY from) / (getX to - getX from))
 
 
-perpendicularSlope : Vec2 -> Vec2 -> Maybe Float
-perpendicularSlope from to =
+perpendicularBisectorSlope : Vec2 -> Vec2 -> Maybe Float
+perpendicularBisectorSlope from to =
     case slope from to of
         Nothing ->
             -- The slope of a line perpendicular to that with undefined slope is 0
@@ -131,52 +136,111 @@ midpoint a b =
     vec2 ((getX a + getX b) / 2) ((getY a + getY b) / 2)
 
 
-solveSlopeInterceptForB : Vec2 -> Maybe Float -> Float
-solveSlopeInterceptForB midpoint slope =
+solveSlopeInterceptForB : Vec2 -> Maybe Float -> Maybe Float
+solveSlopeInterceptForB point slope =
+    -- Solve y=mx+b for b
     case slope of
         Nothing ->
-            -- A vertical line intercepts y at it's y
-            getY midpoint
+            -- A vertical line won't intercept y
+            Nothing
 
         Just slope ->
-            getY midpoint - slope * getX midpoint
+            Just (getY point - slope * getX point)
 
 
-getCircumcenter : Triangle -> Vec2
-getCircumcenter tri =
+findCircumcenter : Vec2 -> Vec2 -> Vec2 -> Maybe Vec2
+findCircumcenter a b c =
+    case circumcenter a b c of
+        Nothing ->
+            case circumcenter b c a of
+                Nothing ->
+                    circumcenter c a b
+
+                Just center ->
+                    Just center
+
+        Just center ->
+            Just center
+
+
+
+-- TODO - Cleanup circumcenter function. There's gotta be a cleaner way.
+
+
+circumcenter : Vec2 -> Vec2 -> Vec2 -> Maybe Vec2
+circumcenter a b c =
     let
-        -- Determine midpoints
-        midAB =
-            midpoint tri.a.pos tri.b.pos
-
-        midBC =
-            midpoint tri.b.pos tri.c.pos
-
-        -- We need the negative reciprocal of the slope
-        -- to get the slope of the perpendicular bisector
+        -- AB
+        slopeAB : Maybe Float
         slopeAB =
-            perpendicularSlope tri.a.pos tri.b.pos
+            perpendicularBisectorSlope a b
 
+        slopeInterceptAB : Maybe Float
+        slopeInterceptAB =
+            solveSlopeInterceptForB (midpoint a b) slopeAB
+
+        -- BC
+        slopeBC : Maybe Float
         slopeBC =
-            perpendicularSlope tri.b.pos tri.c.pos
+            perpendicularBisectorSlope b c
 
-        -- y = mx + b
-        -- solve for b
-        bAB =
-            solveSlopeInterceptForB midAB slopeAB
+        slopeInterceptBC : Maybe Float
+        slopeInterceptBC =
+            solveSlopeInterceptForB (midpoint b c) slopeBC
 
-        bBC =
-            solveSlopeInterceptForB midBC slopeBC
-
+        x : Maybe Float
         x =
-            (bAB - bBC) / (Maybe.withDefault 0 slopeBC - Maybe.withDefault 0 slopeAB)
+            case slopeInterceptAB of
+                Nothing ->
+                    Nothing
+
+                Just siAB ->
+                    case slopeInterceptBC of
+                        Nothing ->
+                            Nothing
+
+                        Just siBC ->
+                            case slopeBC of
+                                Nothing ->
+                                    Nothing
+
+                                Just slBC ->
+                                    case slopeAB of
+                                        Nothing ->
+                                            Nothing
+
+                                        Just slAB ->
+                                            Just ((siAB - siBC) / (slBC - slAB))
     in
-    vec2 x ((Maybe.withDefault 0 slopeAB * x) + bAB)
+    case x of
+        Nothing ->
+            Nothing
+
+        Just x ->
+            case slopeAB of
+                Nothing ->
+                    Nothing
+
+                Just sAB ->
+                    case slopeInterceptAB of
+                        Nothing ->
+                            Nothing
+
+                        Just siAB ->
+                            Just
+                                (vec2 x
+                                    (sAB * x + siAB)
+                                )
 
 
 isInCircle : Vec2 -> Circle -> Bool
 isInCircle point circle =
-    distanceEuclidean point circle.center < circle.radius
+    case circle.center of
+        Nothing ->
+            False
+
+        Just center ->
+            distanceEuclidean point center < circle.radius
 
 
 triangleToString : Triangle -> String

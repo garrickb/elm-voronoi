@@ -19,7 +19,7 @@ type alias Triangle =
 
 
 type alias Circle =
-    { center : Vec2, radius : Float }
+    { center : Maybe Vec2, radius : Float }
 
 
 type alias Model =
