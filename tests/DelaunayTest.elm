@@ -109,38 +109,6 @@ suite =
                         (Delaunay.solveSlopeInterceptForB (vec2 5 5) (Just -1))
                         (Just 10)
             ]
-        , describe "E2E"
-            [ test "AB Midpoint" <|
-                \_ ->
-                    Expect.equal
-                        (Delaunay.midpoint (vec2 1 3) (vec2 5 5))
-                        (vec2 3 4)
-            , test "AB Slope" <|
-                \_ ->
-                    Expect.equal
-                        (Delaunay.slope (vec2 1 3) (vec2 5 5))
-                        (Just (1 / 2))
-            , test "AB perpendicular bisector" <|
-                \_ ->
-                    Expect.equal
-                        (Delaunay.perpendicularBisectorSlope (vec2 1 3) (vec2 5 5))
-                        (Just -2)
-            , test "BC perpendicular bisector" <|
-                \_ ->
-                    Expect.equal
-                        (Delaunay.perpendicularBisectorSlope (vec2 5 5) (vec2 7 5))
-                        Nothing
-            , test "AB solve intercept" <|
-                \_ ->
-                    Expect.equal
-                        (Delaunay.solveSlopeInterceptForB (vec2 3 4) (Just -2))
-                        (Just 10)
-            , test "circumcenter" <|
-                \_ ->
-                    Expect.equal
-                        (Delaunay.findCircumcenter (vec2 1 3) (vec2 5 5) (vec2 7 5))
-                        (Just (vec2 6 -2))
-            ]
 
         -- TODO - Fuzz tests
         , describe "Delaunay.circumcenter"
@@ -153,5 +121,14 @@ suite =
                             (vec2 5 4)
                         )
                         (Just (vec2 3 5))
+            , test "#2" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.findCircumcenter
+                            (vec2 1 3)
+                            (vec2 5 5)
+                            (vec2 7 5)
+                        )
+                        (Just (vec2 6 -2))
             ]
         ]
