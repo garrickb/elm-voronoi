@@ -2,6 +2,7 @@ module Delaunay exposing (..)
 
 import Color exposing (rgb)
 import ColorHelper exposing (colorToHex)
+import Constants exposing (size)
 import Distance exposing (distanceEuclidean)
 import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (Circle, DelaunayTriangle, Model, Point, Triangle)
@@ -72,24 +73,18 @@ drawCircle del =
 calculateDelaunay : Model -> List DelaunayTriangle
 calculateDelaunay model =
     let
-        size2 =
-            10
-
-        offset =
-            vec2 50 50
-
         superTriangle =
             Triangle
                 (Point
-                    (Math.Vector2.add offset (vec2 (size2 / 2) (-1 * size2)))
+                    (vec2 (Constants.svgSize / 2) (-1 * Constants.svgSize))
                     (Color.rgb 255 0 0)
                 )
                 (Point
-                    (Math.Vector2.add offset (vec2 ((3 * size2) / 2) size2))
+                    (vec2 ((3 * Constants.svgSize) / 2) Constants.svgSize)
                     (Color.rgb 0 0 255)
                 )
                 (Point
-                    (Math.Vector2.add offset (vec2 (-1 * (size2 / 2)) size2))
+                    (vec2 (-1 * (Constants.svgSize / 2)) Constants.svgSize)
                     (Color.rgb 0 255 0)
                 )
     in
