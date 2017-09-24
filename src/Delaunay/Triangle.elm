@@ -5,7 +5,7 @@ import ColorHelper exposing (colorToHex)
 import Constants exposing (size)
 import Distance exposing (distanceEuclidean)
 import Math.Vector2 exposing (Vec2, getX, getY, vec2)
-import Model exposing (Circle, DelaunayTriangle, Model, Point, Triangle)
+import Model exposing (Circle, DelaunayTriangle, Edge, Model, Point, Triangle)
 import Point exposing (pointToString)
 import Svg exposing (Svg, g, polyline)
 import Svg.Attributes exposing (cx, cy, fill, r, stroke, strokeWidth)
@@ -242,6 +242,14 @@ containsPoint triangle point =
 containsPoints : DelaunayTriangle -> List Point -> List Bool
 containsPoints triangle points =
     List.map (containsPoint triangle) points
+
+
+getEdges : Triangle -> List Edge
+getEdges triangle =
+    [ Edge triangle.a.pos triangle.b.pos
+    , Edge triangle.b.pos triangle.c.pos
+    , Edge triangle.a.pos triangle.c.pos
+    ]
 
 
 triangleToString : Triangle -> String

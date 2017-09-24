@@ -32,4 +32,44 @@ suite =
                         (Edge.isEqual (Edge (vec2 0 0) (vec2 2 2)) (Edge (vec2 2 2) (vec2 4 4)))
                         False
             ]
+        , describe
+            "Edge.getUnique"
+            [ test "empty" <|
+                \_ ->
+                    Expect.equal
+                        (Edge.getUnique [])
+                        []
+            , test "no duplicates" <|
+                \_ ->
+                    Expect.equal
+                        (Edge.getUnique
+                            [ Edge (vec2 0 0) (vec2 5 5)
+                            , Edge (vec2 5 5) (vec2 5 0)
+                            ]
+                        )
+                        [ Edge (vec2 0 0) (vec2 5 5)
+                        , Edge (vec2 5 5) (vec2 5 0)
+                        ]
+            , test "one duplicate" <|
+                \_ ->
+                    Expect.equal
+                        (Edge.getUnique
+                            [ Edge (vec2 5 5) (vec2 0 0)
+                            , Edge (vec2 0 0) (vec2 5 5)
+                            , Edge (vec2 0 0) (vec2 2 2)
+                            ]
+                        )
+                        [ Edge (vec2 0 0) (vec2 2 2) ]
+            , test "two duplicates" <|
+                \_ ->
+                    Expect.equal
+                        (Edge.getUnique
+                            [ Edge (vec2 0 0) (vec2 1 1)
+                            , Edge (vec2 0 0) (vec2 2 2)
+                            , Edge (vec2 0 0) (vec2 1 1)
+                            , Edge (vec2 0 0) (vec2 2 2)
+                            ]
+                        )
+                        []
+            ]
         ]
