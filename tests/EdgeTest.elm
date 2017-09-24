@@ -11,10 +11,25 @@ suite : Test
 suite =
     describe "Edge"
         [ describe "Edge.isEqual"
-            [ test "positive slope" <|
+            [ test "exact same edges" <|
                 \_ ->
                     Expect.equal
                         (Edge.isEqual (Edge (vec2 0 0) (vec2 2 2)) (Edge (vec2 0 0) (vec2 2 2)))
                         True
+            , test "edges with reverse points" <|
+                \_ ->
+                    Expect.equal
+                        (Edge.isEqual (Edge (vec2 0 0) (vec2 2 2)) (Edge (vec2 2 2) (vec2 0 0)))
+                        True
+            , test "unequal edges #1" <|
+                \_ ->
+                    Expect.equal
+                        (Edge.isEqual (Edge (vec2 0 0) (vec2 2 2)) (Edge (vec2 0 0) (vec2 4 2)))
+                        False
+            , test "unequal edges #2" <|
+                \_ ->
+                    Expect.equal
+                        (Edge.isEqual (Edge (vec2 0 0) (vec2 2 2)) (Edge (vec2 2 2) (vec2 4 4)))
+                        False
             ]
         ]
