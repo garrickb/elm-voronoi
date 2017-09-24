@@ -36,6 +36,8 @@ drawTriangle del =
     polyline
         [ fill (colorToHex del.triangle.a.color)
         , stroke "black"
+        , fill "none"
+        , strokeWidth "1"
         , Svg.Attributes.points (triangleToString del.triangle)
         ]
         []
@@ -61,7 +63,7 @@ drawCircle del =
                 , r (Basics.toString del.circle.radius)
                 , fill "none"
                 , stroke "black"
-                , strokeWidth "0.25"
+                , strokeWidth "0.1"
                 ]
                 []
 
@@ -70,7 +72,7 @@ drawCircle del =
 -- Controller
 
 
-getSuperTriangle : List DelaunayTriangle
+getSuperTriangle : DelaunayTriangle
 getSuperTriangle =
     -- TODO - Generate super triangle based on points already in the model
     let
@@ -89,7 +91,7 @@ getSuperTriangle =
                     (Color.rgb 0 255 0)
                 )
     in
-    [ getDelaunayTriangle superTriangle ]
+    getDelaunayTriangle superTriangle
 
 
 getDelaunayTriangle : Triangle -> DelaunayTriangle
@@ -257,3 +259,8 @@ triangleToString tri =
     List.map pointToString [ tri.a, tri.b, tri.c ]
         |> List.intersperse " "
         |> String.concat
+
+
+compareTriangle : Triangle -> Triangle -> Bool
+compareTriangle a b =
+    a == b

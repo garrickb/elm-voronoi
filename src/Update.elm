@@ -2,6 +2,7 @@ module Update exposing (..)
 
 import Color exposing (Color)
 import Constants
+import Delaunay.BowyerWatson
 import Math.Vector2 exposing (Vec2, vec2)
 import Model exposing (..)
 import Random.Pcg exposing (..)
@@ -10,7 +11,6 @@ import Random.Pcg exposing (..)
 type Msg
     = ToggleDistance
     | AddPoint ( Point, Seed )
-    | SetTriangles (List DelaunayTriangle)
 
 
 update : Msg -> Model -> Model
@@ -30,13 +30,13 @@ update msg model =
         AddPoint data ->
             addPoint data model |> updateSeed data
 
-        SetTriangles del ->
-            { model | triangles = del }
-
 
 addPoint : ( Point, Seed ) -> Model -> Model
 addPoint random model =
-    { model | points = Tuple.first random :: model.points }
+    Delaunay.BowyerWatson.calculate
+        { model
+            | points = Tuple.first random :: model.points
+        }
 
 
 updateSeed : ( Point, Seed ) -> Model -> Model

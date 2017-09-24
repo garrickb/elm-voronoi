@@ -6,19 +6,68 @@ import Edge
 import Model exposing (DelaunayTriangle, Edge, Model, Point, Triangle)
 
 
-perform : Model -> List DelaunayTriangle
-perform model =
-    getGoodTriangles model.points model.triangles
-        |> List.map connectEdgeToPoint
+calculate : Model -> Model
+calculate model =
+    { model | triangles = perform model.points [ Delaunay.Triangle.getSuperTriangle ] }
 
 
-performPoint : Point -> List DelaunayTriangle -> List DelaunayTriangle
-performPoint point triangles =
-    List.map (connectEdgeToPoint point) (getBadTrianglesEdges [ point ] triangles)
+perform : List Point -> List DelaunayTriangle -> List DelaunayTriangle
+perform points triangles =
+    case List.head points of
+        Nothing ->
+            triangles
+                |> cleanup
+
+        Just point ->
+            case List.tail points of
+                Nothing ->
+                    performOnPoint point triangles
+
+                Just remainingPoints ->
+                    performOnPoint point triangles
+                        |> perform remainingPoints
 
 
-connectEdgeToPoint : Point -> Edge -> DelaunayTriangle
-connectEdgeToPoint point edge =
+cleanup : List DelaunayTriangle -> List DelaunayTriangle
+cleanup triangles =
+    let
+        superTriangle =
+            Delaunay.Triangle.getSuperTriangle
+
+        sharesAVertex a b =
+            False
+    in
+    List.filter (Basics.not << sharesAVertex superTriangle) triangles
+
+
+performOnPoint : Point -> List DelaunayTriangle -> List DelaunayTriangle
+performOnPoint point triangles =
+    let
+        badTriangles =
+            getBadTriangles point triangles
+
+        badTrianglesEdges =
+            getBadTrianglesEdges point triangles
+    in
+    --  List.map
+    --    (retriangulatePolygonalHole point)
+    --  (getBadTrianglesEdges point triangles)
+    removeTriangles triangles badTriangles
+        |> addReTriangulation point badTrianglesEdges
+
+
+addReTriangulation : Point -> List Edge -> List DelaunayTriangle -> List DelaunayTriangle
+addReTriangulation point edges triangles =
+    List.append
+        triangles
+        (List.map
+            (retriangulatePolygonalHole point)
+            edges
+        )
+
+
+retriangulatePolygonalHole : Point -> Edge -> DelaunayTriangle
+retriangulatePolygonalHole point edge =
     getDelaunayTriangle
         (Triangle
             (Point
@@ -33,58 +82,47 @@ connectEdgeToPoint point edge =
         )
 
 
-getBadTrianglesEdges : List Point -> List DelaunayTriangle -> List Edge
-getBadTrianglesEdges points triangles =
+getBadTrianglesEdges : Point -> List DelaunayTriangle -> List Edge
+getBadTrianglesEdges point triangles =
     let
         badTriangles =
-            getBadTriangles points triangles
+            getBadTriangles point triangles
     in
     List.map (\tri -> Delaunay.Triangle.getEdges tri.triangle) badTriangles
         |> List.concat
         |> Edge.getUnique
 
 
-addPoints : Model -> Model
-addPoints model =
-    model
+removeTriangles : List DelaunayTriangle -> List DelaunayTriangle -> List DelaunayTriangle
+removeTriangles triangles trianglesToRemove =
+    let
+        removeTriangle toRemove triangles =
+            List.filter
+                (\x -> Delaunay.Triangle.compareTriangle toRemove.triangle x.triangle)
+                triangles
+    in
+    List.foldr removeTriangle triangles trianglesToRemove
 
 
-addPoint : Model -> Model
-addPoint model =
-    model
+getGoodTriangles : Point -> List DelaunayTriangle -> List DelaunayTriangle
+getGoodTriangles point triangulation =
+    let
+        isGood point triangle =
+            if containsPoint triangle point then
+                Nothing
+            else
+                Just triangle
+    in
+    List.filterMap (isGood point) triangulation
 
 
-removeTriangle : Model -> Triangle -> Model
-removeTriangle model triangle =
-    { model | triangles = List.filter (\x -> x == getDelaunayTriangle triangle) model.triangles }
-
-
-getGoodTriangles : List Point -> List DelaunayTriangle -> List DelaunayTriangle
-getGoodTriangles points triangulation =
-    List.filterMap (isGood points) triangulation
-
-
-isGood : List Point -> DelaunayTriangle -> Maybe DelaunayTriangle
-isGood points triangle =
-    if isTriangleBad points triangle then
-        Nothing
-    else
-        Just triangle
-
-
-getBadTriangles : List Point -> List DelaunayTriangle -> List DelaunayTriangle
-getBadTriangles points triangulation =
-    List.filterMap (isBad points) triangulation
-
-
-isBad : List Point -> DelaunayTriangle -> Maybe DelaunayTriangle
-isBad points triangle =
-    if isTriangleBad points triangle then
-        Just triangle
-    else
-        Nothing
-
-
-isTriangleBad : List Point -> DelaunayTriangle -> Bool
-isTriangleBad points triangle =
-    List.any (\x -> x == True) (List.map (containsPoint triangle) points)
+getBadTriangles : Point -> List DelaunayTriangle -> List DelaunayTriangle
+getBadTriangles point triangulation =
+    let
+        isBad point triangle =
+            if containsPoint triangle point then
+                Just triangle
+            else
+                Nothing
+    in
+    List.filterMap (isBad point) triangulation

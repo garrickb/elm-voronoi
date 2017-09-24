@@ -22,8 +22,8 @@ point point =
     rect
         [ x <| Basics.toString <| getX point.pos
         , y <| Basics.toString <| getY point.pos
-        , width "1"
-        , height "1"
+        , width "5"
+        , height "5"
         , fill <|
             colorToHex
                 (Color.rgb
