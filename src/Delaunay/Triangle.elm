@@ -70,8 +70,8 @@ drawCircle del =
 -- Controller
 
 
-calculateDelaunay : Model -> List DelaunayTriangle
-calculateDelaunay model =
+getSuperTriangle : List DelaunayTriangle
+getSuperTriangle =
     -- TODO - Generate super triangle based on points already in the model
     let
         superTriangle =

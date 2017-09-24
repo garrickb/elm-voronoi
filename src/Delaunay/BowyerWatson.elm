@@ -1,7 +1,47 @@
 module Delaunay.BowyerWatson exposing (..)
 
+import Color
 import Delaunay.Triangle exposing (containsPoint, getDelaunayTriangle)
-import Model exposing (DelaunayTriangle, Model, Point, Triangle)
+import Edge
+import Model exposing (DelaunayTriangle, Edge, Model, Point, Triangle)
+
+
+perform : Model -> List DelaunayTriangle
+perform model =
+    getGoodTriangles model.points model.triangles
+        |> List.map connectEdgeToPoint
+
+
+performPoint : Point -> List DelaunayTriangle -> List DelaunayTriangle
+performPoint point triangles =
+    List.map (connectEdgeToPoint point) (getBadTrianglesEdges [ point ] triangles)
+
+
+connectEdgeToPoint : Point -> Edge -> DelaunayTriangle
+connectEdgeToPoint point edge =
+    getDelaunayTriangle
+        (Triangle
+            (Point
+                edge.a
+                (Color.rgb 255 0 0)
+            )
+            (Point
+                edge.b
+                (Color.rgb 0 0 255)
+            )
+            point
+        )
+
+
+getBadTrianglesEdges : List Point -> List DelaunayTriangle -> List Edge
+getBadTrianglesEdges points triangles =
+    let
+        badTriangles =
+            getBadTriangles points triangles
+    in
+    List.map (\tri -> Delaunay.Triangle.getEdges tri.triangle) badTriangles
+        |> List.concat
+        |> Edge.getUnique
 
 
 addPoints : Model -> Model
