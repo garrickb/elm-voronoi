@@ -19,11 +19,10 @@ points model =
 
 point : Point -> Svg msg
 point point =
-    rect
-        [ x <| Basics.toString <| getX point.pos
-        , y <| Basics.toString <| getY point.pos
-        , width "5"
-        , height "5"
+    Svg.circle
+        [ cx <| Basics.toString <| getX point.pos
+        , cy <| Basics.toString <| getY point.pos
+        , r "2"
         , fill <|
             colorToHex
                 (Color.rgb
@@ -31,6 +30,8 @@ point point =
                     (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).green))
                     (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).blue))
                 )
+        , stroke "black"
+        , strokeWidth "0.1"
         ]
         []
 

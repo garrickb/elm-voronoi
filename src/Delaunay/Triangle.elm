@@ -148,11 +148,21 @@ solveSlopeInterceptForB point slope =
 
 findCircumcenter : Vec2 -> Vec2 -> Vec2 -> Maybe Vec2
 findCircumcenter a b c =
-    case circumcenter a b c of
+    case circumcenter a c b of
         Nothing ->
-            case circumcenter b c a of
+            case circumcenter b a c of
                 Nothing ->
-                    circumcenter c a b
+                    case circumcenter b c a of
+                        Nothing ->
+                            case circumcenter c a b of
+                                Nothing ->
+                                    circumcenter c b a
+
+                                Just center ->
+                                    Just center
+
+                        Just center ->
+                            Just center
 
                 Just center ->
                     Just center
