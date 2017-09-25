@@ -33,10 +33,14 @@ update msg model =
 
 addPoint : ( Point, Seed ) -> Model -> Model
 addPoint random model =
-    Delaunay.BowyerWatson.calculate
-        { model
-            | points = Tuple.first random :: model.points
-        }
+    let
+        point =
+            Tuple.first random
+    in
+    { model
+        | points = point :: model.points
+        , triangles = Delaunay.BowyerWatson.performOnPoint point model.triangles
+    }
 
 
 updateSeed : ( Point, Seed ) -> Model -> Model

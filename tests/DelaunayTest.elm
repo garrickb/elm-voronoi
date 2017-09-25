@@ -3,7 +3,7 @@ module DelaunayTest exposing (suite)
 import Color
 import Delaunay.Triangle
 import Expect
-import Math.Vector2 exposing (getX, getY, vec2)
+import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (Point, Triangle)
 import Test exposing (..)
 
@@ -11,6 +11,25 @@ import Test exposing (..)
 point : Float -> Float -> Point
 point x y =
     Point (vec2 x y) (Color.rgb 0 0 0)
+
+
+triangle : Vec2 -> Vec2 -> Vec2 -> Triangle
+triangle a b c =
+    let
+        color =
+            Color.rgb 0 0 0
+    in
+    Triangle (Point a color) (Point b color) (Point c color)
+
+
+circle : Float -> Float -> Float -> Model.DelaunayTriangle
+circle cx cy radius =
+    Model.DelaunayTriangle
+        (triangle (vec2 0 0) (vec2 0 0) (vec2 0 0))
+        (Model.Circle
+            (Just (vec2 cx cy))
+            radius
+        )
 
 
 suite : Test
@@ -64,27 +83,27 @@ suite =
             [ test "positive slope" <|
                 \_ ->
                     Expect.equal
-                        (Delaunay.Triangle.perpendicularBisectorSlope (vec2 0 0) (vec2 2 2))
+                        (Delaunay.Triangle.perpendicularSlope (vec2 0 0) (vec2 2 2))
                         (Just -1)
             , test "positive slope #2" <|
                 \_ ->
                     Expect.equal
-                        (Delaunay.Triangle.perpendicularBisectorSlope (vec2 0 0) (vec2 1 2))
+                        (Delaunay.Triangle.perpendicularSlope (vec2 0 0) (vec2 1 2))
                         (Just (-1 / 2))
             , test "negative slope" <|
                 \_ ->
                     Expect.equal
-                        (Delaunay.Triangle.perpendicularBisectorSlope (vec2 0 2) (vec2 1 0))
+                        (Delaunay.Triangle.perpendicularSlope (vec2 0 2) (vec2 1 0))
                         (Just (1 / 2))
             , test "vertical line" <|
                 \_ ->
                     Expect.equal
-                        (Delaunay.Triangle.perpendicularBisectorSlope (vec2 0 0) (vec2 0 10))
+                        (Delaunay.Triangle.perpendicularSlope (vec2 0 0) (vec2 0 10))
                         (Just 0)
             , test "horizontal line" <|
                 \_ ->
                     Expect.equal
-                        (Delaunay.Triangle.perpendicularBisectorSlope (vec2 0 0) (vec2 10 0))
+                        (Delaunay.Triangle.perpendicularSlope (vec2 0 0) (vec2 10 0))
                         Nothing
             ]
         , describe "Delaunay.Triangle.solveSlopeInterceptForB"
@@ -108,6 +127,63 @@ suite =
                     Expect.equal
                         (Delaunay.Triangle.solveSlopeInterceptForB (vec2 5 5) (Just -1))
                         (Just 10)
+            ]
+        , describe "Delaunay.Triangle.containsPoint"
+            [ test "on origin" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 10 10))
+                        True
+            , test "on border #1" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 10 0))
+                        True
+            , test "on border #2" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 0 10))
+                        True
+            , test "on border #3" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 20 10))
+                        True
+            , test "on border #4" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 10 20))
+                        True
+            , test "on border #5" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 5 5))
+                        True
+            , test "outside #1" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 0 0))
+                        False
+            , test "outside #2" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 20 0))
+                        False
+            , test "outside #3" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 0 20))
+                        False
+            , test "outside #4" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 10) (point 20 20))
+                        False
+            , test "outside #5" <|
+                \_ ->
+                    Expect.equal
+                        (Delaunay.Triangle.containsPoint (circle 10 10 5) (point 50 50))
+                        False
             ]
 
         -- TODO - Fuzz tests

@@ -22,7 +22,7 @@ point point =
     Svg.circle
         [ cx <| Basics.toString <| getX point.pos
         , cy <| Basics.toString <| getY point.pos
-        , r "2"
+        , r "4"
         , fill <|
             colorToHex
                 (Color.rgb
@@ -31,7 +31,7 @@ point point =
                     (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).blue))
                 )
         , stroke "black"
-        , strokeWidth "0.1"
+        , strokeWidth "0.25"
         ]
         []
 

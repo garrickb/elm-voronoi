@@ -17,7 +17,7 @@ view : Model -> Html Update.Msg
 view model =
     div [ Html.Attributes.style [ ( "text-align", "center" ) ] ]
         [ h2 []
-            [ Html.text "Voronoi Diagram" ]
+            [ Html.text "Delaunay Triangulation using Bowyer Watson algorithm" ]
         , div []
             [ svg
                 [ width (Basics.toString Constants.viewSize)
@@ -49,20 +49,19 @@ view model =
         , Html.button
             [ Html.Events.onClick (Update.AddPoint (Update.randomPoint model)) ]
             [ Html.text "Add Random Point" ]
-        , Html.button
-            [ Html.Events.onClick Update.ToggleDistance ]
-            [ Html.text
-                (case model.distance of
-                    Model.Euclidean ->
-                        "Switch to Manhattan Distance Formula"
 
-                    Model.Manhattan ->
-                        "Switch to Chebyshev Distance Formula"
-
-                    Model.Chebyshev ->
-                        "Switch to Euclidean Distance Formula"
-                )
-            ]
+        --, Html.button
+        --    [ Html.Events.onClick Update.ToggleDistance ]
+        --    [ Html.text
+        --        (case model.distance of
+        --            Model.Euclidean ->
+        --                "Switch to Manhattan Distance Formula"
+        --            Model.Manhattan ->
+        --                "Switch to Chebyshev Distance Formula"
+        --            Model.Chebyshev ->
+        --                "Switch to Euclidean Distance Formula"
+        --        )
+        --    ]
         ]
 
 

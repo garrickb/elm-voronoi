@@ -2,7 +2,7 @@ module Constants exposing (..)
 
 
 coordinateBufferZone =
-    1
+    10
 
 
 pointColorMult =
@@ -14,7 +14,7 @@ lineWidth =
 
 
 svgSize =
-    100
+    500
 
 
 size =

@@ -4,6 +4,7 @@ import Color exposing (rgb)
 import ColorHelper exposing (colorToHex)
 import Constants exposing (size)
 import Distance exposing (distanceEuclidean)
+import Edge
 import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (Circle, DelaunayTriangle, Edge, Model, Point, Triangle)
 import Point exposing (pointToString)
@@ -31,12 +32,31 @@ drawTriangles del =
         )
 
 
+averageTriangleColor : Triangle -> String
+averageTriangleColor tri =
+    let
+        a =
+            Color.toRgb tri.a.color
+
+        b =
+            Color.toRgb tri.b.color
+
+        c =
+            Color.toRgb tri.c.color
+    in
+    colorToHex
+        (Color.rgb
+            (round (sqrt (Basics.toFloat ((a.red + b.red + c.red) ^ 2) / 3)))
+            (round (sqrt (Basics.toFloat ((a.green + b.green + c.green) ^ 2) / 3)))
+            (round (sqrt (Basics.toFloat ((a.blue + b.blue + c.blue) ^ 2) / 3)))
+        )
+
+
 drawTriangle : DelaunayTriangle -> Svg msg
 drawTriangle del =
     polyline
-        [ fill (colorToHex del.triangle.a.color)
+        [ fill "none"
         , stroke "black"
-        , fill "none"
         , strokeWidth "1"
         , Svg.Attributes.points (triangleToString del.triangle)
         ]
@@ -62,14 +82,35 @@ drawCircle del =
                 , cy (Basics.toString (getY center))
                 , r (Basics.toString del.circle.radius)
                 , fill "none"
-                , stroke "black"
-                , strokeWidth "0.1"
+                , stroke "grey"
+                , strokeWidth "0.25"
                 ]
                 []
 
 
 
 -- Controller
+
+
+getMinAndMax : List Point -> (Point -> Float) -> { min : Float, max : Float }
+getMinAndMax points getVal =
+    let
+        sorted =
+            List.sortBy (\x -> getVal x) points
+
+        min : Point
+        min =
+            Maybe.withDefault
+                (Point (vec2 0 0) (Color.rgb 0 0 0))
+                (List.head sorted)
+
+        max : Point
+        max =
+            Maybe.withDefault
+                (Point (vec2 Constants.size Constants.size) (Color.rgb 0 0 0))
+                (List.reverse sorted |> List.head)
+    in
+    { min = getVal min, max = getVal max }
 
 
 getSuperTriangle : DelaunayTriangle
@@ -94,6 +135,19 @@ getSuperTriangle =
     getDelaunayTriangle superTriangle
 
 
+{-| Returns the points comprising the triangle.
+-}
+getPoints : DelaunayTriangle -> List Point
+getPoints triangle =
+    [ triangle.triangle.a
+    , triangle.triangle.b
+    , triangle.triangle.c
+    ]
+
+
+{-| Turns a triangle into a DelaunayTriangle which
+contains information about the circumcenter and radius.
+-}
 getDelaunayTriangle : Triangle -> DelaunayTriangle
 getDelaunayTriangle tri =
     let
@@ -106,6 +160,8 @@ getDelaunayTriangle tri =
         |> DelaunayTriangle tri
 
 
+{-| Finds the slope between two points.
+-}
 slope : Vec2 -> Vec2 -> Maybe Float
 slope from to =
     if getX to == getX from then
@@ -115,8 +171,11 @@ slope from to =
         Just ((getY to - getY from) / (getX to - getX from))
 
 
-perpendicularBisectorSlope : Vec2 -> Vec2 -> Maybe Float
-perpendicularBisectorSlope from to =
+{-| Finds the slope of the perpendicular bisector
+for two points.
+-}
+perpendicularSlope : Vec2 -> Vec2 -> Maybe Float
+perpendicularSlope from to =
     case slope from to of
         Nothing ->
             -- The slope of a line perpendicular to that with undefined slope is 0
@@ -129,14 +188,17 @@ perpendicularBisectorSlope from to =
                 Just (-1 / slopeResult)
 
 
+{-| Finds the midpoint between two points.
+-}
 midpoint : Vec2 -> Vec2 -> Vec2
 midpoint a b =
     vec2 ((getX a + getX b) / 2) ((getY a + getY b) / 2)
 
 
+{-| Solves y=mx+b for b
+-}
 solveSlopeInterceptForB : Vec2 -> Maybe Float -> Maybe Float
 solveSlopeInterceptForB point slope =
-    -- Solve y=mx+b for b
     case slope of
         Nothing ->
             -- A vertical line won't intercept y
@@ -146,8 +208,12 @@ solveSlopeInterceptForB point slope =
             Just (getY point - slope * getX point)
 
 
+{-| Try every combination of points for the circumcenter.
+-}
 findCircumcenter : Vec2 -> Vec2 -> Vec2 -> Maybe Vec2
 findCircumcenter a b c =
+    -- Try every combination just in case...
+    -- TODO - clean this up
     case circumcenter a c b of
         Nothing ->
             case circumcenter b a c of
@@ -171,17 +237,16 @@ findCircumcenter a b c =
             Just center
 
 
-
--- TODO - Cleanup circumcenter function. There's gotta be a cleaner way.
-
-
+{-| Finds the circumcenter of a triangle (given it's three points).
+-}
 circumcenter : Vec2 -> Vec2 -> Vec2 -> Maybe Vec2
 circumcenter a b c =
+    -- TODO - Cleanup function. There's gotta be a cleaner way.
     let
         -- AB
         slopeAB : Maybe Float
         slopeAB =
-            perpendicularBisectorSlope a b
+            perpendicularSlope a b
 
         slopeInterceptAB : Maybe Float
         slopeInterceptAB =
@@ -190,7 +255,7 @@ circumcenter a b c =
         -- BC
         slopeBC : Maybe Float
         slopeBC =
-            perpendicularBisectorSlope b c
+            perpendicularSlope b c
 
         slopeInterceptBC : Maybe Float
         slopeInterceptBC =
@@ -241,6 +306,8 @@ circumcenter a b c =
                                 )
 
 
+{-| Checks if a DelaunayTriangle's circle contains a point or not.
+-}
 containsPoint : DelaunayTriangle -> Point -> Bool
 containsPoint triangle point =
     case triangle.circle.center of
@@ -248,14 +315,11 @@ containsPoint triangle point =
             False
 
         Just center ->
-            distanceEuclidean point.pos center < triangle.circle.radius
+            distanceEuclidean point.pos center <= triangle.circle.radius
 
 
-containsPoints : DelaunayTriangle -> List Point -> List Bool
-containsPoints triangle points =
-    List.map (containsPoint triangle) points
-
-
+{-| Returns the three edges comprising the triangle.
+-}
 getEdges : Triangle -> List Edge
 getEdges triangle =
     [ Edge triangle.a.pos triangle.b.pos
@@ -264,13 +328,31 @@ getEdges triangle =
     ]
 
 
+{-| Returns the points of a triangle in String form for drawing
+the triangle in Svg
+
+returns: [x1,y1 x2,y2 x3,y3 x1,y1]
+
+-}
 triangleToString : Triangle -> String
 triangleToString tri =
-    List.map pointToString [ tri.a, tri.b, tri.c ]
+    List.map pointToString [ tri.a, tri.b, tri.c, tri.a ]
         |> List.intersperse " "
         |> String.concat
 
 
+{-| Returns true if the triangle contains the edge passed as a parameter.
+-}
+triangleHasEdge : Triangle -> Edge -> Bool
+triangleHasEdge triangle edge =
+    List.any (Edge.isEqual edge) (getEdges triangle)
+
+
+{-| Returns true if the triangles have all three edges in common.
+-}
 compareTriangle : Triangle -> Triangle -> Bool
 compareTriangle a b =
-    a == b
+    if List.all (triangleHasEdge a) (getEdges b) then
+        True
+    else
+        False
