@@ -113,28 +113,6 @@ getMinAndMax points getVal =
     { min = getVal min, max = getVal max }
 
 
-getSuperTriangle : DelaunayTriangle
-getSuperTriangle =
-    -- TODO - Generate super triangle based on points already in the model
-    let
-        superTriangle =
-            Triangle
-                (Point
-                    (vec2 (Constants.svgSize / 2) (-1 * Constants.svgSize))
-                    (Color.rgb 255 0 0)
-                )
-                (Point
-                    (vec2 ((3 * Constants.svgSize) / 2) Constants.svgSize)
-                    (Color.rgb 0 0 255)
-                )
-                (Point
-                    (vec2 (-1 * (Constants.svgSize / 2)) Constants.svgSize)
-                    (Color.rgb 0 255 0)
-                )
-    in
-    getDelaunayTriangle superTriangle
-
-
 {-| Returns the points comprising the triangle.
 -}
 getPoints : DelaunayTriangle -> List Point

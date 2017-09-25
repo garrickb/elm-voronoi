@@ -53,6 +53,11 @@ drawLine vecOne vecTwo =
 -- Controller
 
 
+getPoint : Float -> Float -> Point
+getPoint x y =
+    Point (vec2 x y) (Color.rgb 255 255 255)
+
+
 defaultPoint : Point
 defaultPoint =
     Point (vec2 0 0) (Color.rgb 255 255 255)

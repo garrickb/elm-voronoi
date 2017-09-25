@@ -1,7 +1,6 @@
 module View exposing (..)
 
 import Constants
-import Delaunay.BowyerWatson
 import Delaunay.Triangle exposing (drawDelaunay)
 import Html exposing (..)
 import Html.Attributes
