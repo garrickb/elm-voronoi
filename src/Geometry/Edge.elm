@@ -1,6 +1,23 @@
 module Geometry.Edge exposing (..)
 
+import Constants
+import Math.Vector2 exposing (getX, getY)
 import Model exposing (Edge, Triangle)
+import Svg exposing (Svg, line)
+import Svg.Attributes exposing (..)
+
+
+draw : Edge -> Svg msg
+draw edge =
+    line
+        [ stroke "grey"
+        , strokeWidth Constants.lineWidth
+        , x1 (Basics.toString (getX edge.a))
+        , x2 (Basics.toString (getX edge.b))
+        , y1 (Basics.toString (getY edge.a))
+        , y2 (Basics.toString (getY edge.b))
+        ]
+        []
 
 
 getUnique : List Edge -> List Edge

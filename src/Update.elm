@@ -55,7 +55,7 @@ randomPoint model =
 
 pointGenerator : Generator Point
 pointGenerator =
-    map Point coordinateGenerator |> andMap colorGenerator
+    map (\point color -> Point point (Just color)) coordinateGenerator |> andMap colorGenerator
 
 
 coordinateGenerator : Generator Vec2

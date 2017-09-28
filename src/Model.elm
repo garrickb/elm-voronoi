@@ -1,13 +1,12 @@
 module Model exposing (..)
 
 import Color exposing (Color)
-import Constants exposing (size)
 import Math.Vector2 exposing (Vec2, vec2)
 import Random.Pcg exposing (..)
 
 
 type alias Point =
-    { pos : Vec2, color : Color }
+    { pos : Vec2, color : Maybe Color }
 
 
 type alias Edge =

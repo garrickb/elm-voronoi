@@ -1,10 +1,10 @@
 module Delaunay.BowyerWatson exposing (performOnPoint)
 
-import Color
 import Constants
 import Delaunay.Triangle exposing (containsPoint, getDelaunayTriangle)
 import Geometry.Edge
-import Geometry.Point exposing (getPoint)
+import Geometry.Triangle
+import Math.Vector2 exposing (vec2)
 import Model exposing (DelaunayTriangle, Edge, Model, Point, Triangle)
 
 
@@ -14,15 +14,15 @@ performOnPoint point triangles =
         defaultTriangles =
             [ getDelaunayTriangle
                 (Triangle
-                    (getPoint 0 0)
-                    (getPoint 0 Constants.size)
-                    (getPoint Constants.size Constants.size)
+                    (Point (vec2 0 0) Nothing)
+                    (Point (vec2 0 Constants.size) Nothing)
+                    (Point (vec2 Constants.size Constants.size) Nothing)
                 )
             , getDelaunayTriangle
                 (Triangle
-                    (getPoint 0 0)
-                    (getPoint Constants.size 0)
-                    (getPoint Constants.size Constants.size)
+                    (Point (vec2 0 0) Nothing)
+                    (Point (vec2 Constants.size 0) Nothing)
+                    (Point (vec2 Constants.size Constants.size) Nothing)
                 )
             ]
     in
@@ -39,26 +39,10 @@ retriangulatePolygonalHole point edges triangles =
     List.append
         triangles
         (List.map
-            (retriangulate point)
+            (\edge ->
+                getDelaunayTriangle (Geometry.Triangle.retriangulate point edge)
+            )
             edges
-        )
-
-
-{-| Connects the point to the edge, forming a triangle.
--}
-retriangulate : Point -> Edge -> DelaunayTriangle
-retriangulate point edge =
-    getDelaunayTriangle
-        (Triangle
-            (Point
-                edge.a
-                (Color.rgb 255 0 0)
-            )
-            (Point
-                edge.b
-                (Color.rgb 0 0 255)
-            )
-            point
         )
 
 
@@ -72,7 +56,7 @@ found in the triangle list.
 badTriangleEdges : Point -> List DelaunayTriangle -> List Edge
 badTriangleEdges point triangles =
     List.map
-        (\tri -> Delaunay.Triangle.getEdges tri.triangle)
+        (\tri -> Geometry.Triangle.getEdges tri.triangle)
         (badTriangles point triangles)
         |> List.concat
         |> Geometry.Edge.getUnique

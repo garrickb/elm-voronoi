@@ -12,13 +12,17 @@ import Svg.Attributes exposing (..)
 -- View
 
 
-points : Model -> List (Svg msg)
-points model =
-    List.map point model.points
+drawPoints : Model -> List (Svg msg)
+drawPoints model =
+    List.map draw model.points
 
 
-point : Point -> Svg msg
-point point =
+draw : Point -> Svg msg
+draw point =
+    let
+        color =
+            Color.toRgb (Maybe.withDefault (Color.rgb 255 255 255) point.color)
+    in
     Svg.circle
         [ cx <| Basics.toString <| getX point.pos
         , cy <| Basics.toString <| getY point.pos
@@ -26,25 +30,12 @@ point point =
         , fill <|
             colorToHex
                 (Color.rgb
-                    (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).red))
-                    (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).green))
-                    (round (Constants.pointColorMult * Basics.toFloat (Color.toRgb point.color).blue))
+                    (round (Constants.pointColorMult * Basics.toFloat color.red))
+                    (round (Constants.pointColorMult * Basics.toFloat color.green))
+                    (round (Constants.pointColorMult * Basics.toFloat color.blue))
                 )
         , stroke "black"
         , strokeWidth "0.25"
-        ]
-        []
-
-
-drawLine : Point -> Point -> Svg msg
-drawLine vecOne vecTwo =
-    line
-        [ stroke "grey"
-        , strokeWidth Constants.lineWidth
-        , x1 (toString (getX vecOne.pos))
-        , x2 (toString (getX vecTwo.pos))
-        , y1 (toString (getY vecOne.pos))
-        , y2 (toString (getY vecTwo.pos))
         ]
         []
 
@@ -53,18 +44,8 @@ drawLine vecOne vecTwo =
 -- Controller
 
 
-getPoint : Float -> Float -> Point
-getPoint x y =
-    Point (vec2 x y) (Color.rgb 255 255 255)
-
-
-defaultPoint : Point
-defaultPoint =
-    Point (vec2 0 0) (Color.rgb 255 255 255)
-
-
-pointToString : Point -> String
-pointToString point =
+toString : Point -> String
+toString point =
     String.concat
         (List.intersperse
             ","
