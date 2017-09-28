@@ -4,17 +4,17 @@ import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (Distance, Point)
 
 
-distance : Distance -> Vec2 -> Point -> Float
+distance : Distance -> Vec2 -> Vec2 -> Float
 distance distForm a b =
     case distForm of
         Model.Euclidean ->
-            distanceEuclidean a b.pos
+            distanceEuclidean a b
 
         Model.Manhattan ->
-            distanceManhattan a b.pos
+            distanceManhattan a b
 
         Model.Chebyshev ->
-            distanceChebyshev a b.pos
+            distanceChebyshev a b
 
 
 distanceEuclidean : Vec2 -> Vec2 -> Float

@@ -33,10 +33,6 @@ view model =
                 [ g
                     [ Svg.Attributes.name "delaunay" ]
                     (drawDelaunay model.triangles)
-
-                --, g
-                --    [ Svg.Attributes.name "naiveVoronoi" ]
-                --    (NaiveVoronoi.naiveVoronoi model)
                 , g
                     [ Svg.Attributes.name "points" ]
                     (drawPoints model)
