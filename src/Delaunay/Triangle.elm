@@ -91,6 +91,23 @@ drawCircle del =
 -- Controller
 
 
+defaultTriangles : List DelaunayTriangle
+defaultTriangles =
+    [ getDelaunayTriangle
+        (Triangle
+            (Point (vec2 0 0) Nothing)
+            (Point (vec2 0 Constants.size) Nothing)
+            (Point (vec2 Constants.size Constants.size) Nothing)
+        )
+    , getDelaunayTriangle
+        (Triangle
+            (Point (vec2 0 0) Nothing)
+            (Point (vec2 Constants.size 0) Nothing)
+            (Point (vec2 Constants.size Constants.size) Nothing)
+        )
+    ]
+
+
 getMinAndMax : List Point -> (Point -> Float) -> { min : Float, max : Float }
 getMinAndMax points getVal =
     let

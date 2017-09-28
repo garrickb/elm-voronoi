@@ -1,34 +1,16 @@
 module Delaunay.BowyerWatson exposing (performOnPoint)
 
-import Constants
 import Delaunay.Triangle exposing (containsPoint, getDelaunayTriangle)
 import Geometry.Edge
 import Geometry.Triangle
-import Math.Vector2 exposing (vec2)
 import Model exposing (DelaunayTriangle, Edge, Model, Point, Triangle)
 
 
 performOnPoint : Point -> List DelaunayTriangle -> List DelaunayTriangle
 performOnPoint point triangles =
-    let
-        defaultTriangles =
-            [ getDelaunayTriangle
-                (Triangle
-                    (Point (vec2 0 0) Nothing)
-                    (Point (vec2 0 Constants.size) Nothing)
-                    (Point (vec2 Constants.size Constants.size) Nothing)
-                )
-            , getDelaunayTriangle
-                (Triangle
-                    (Point (vec2 0 0) Nothing)
-                    (Point (vec2 Constants.size 0) Nothing)
-                    (Point (vec2 Constants.size Constants.size) Nothing)
-                )
-            ]
-    in
     if triangles == [] then
-        goodTriangles point defaultTriangles
-            |> retriangulatePolygonalHole point (badTriangleEdges point defaultTriangles)
+        goodTriangles point Delaunay.Triangle.defaultTriangles
+            |> retriangulatePolygonalHole point (badTriangleEdges point Delaunay.Triangle.defaultTriangles)
     else
         goodTriangles point triangles
             |> retriangulatePolygonalHole point (badTriangleEdges point triangles)
