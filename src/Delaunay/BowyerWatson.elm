@@ -1,6 +1,6 @@
 module Delaunay.BowyerWatson exposing (performOnPoint)
 
-import Delaunay.Triangle exposing (containsPoint, getDelaunayTriangle)
+import Delaunay.Triangle exposing (containsPoint)
 import Geometry.Edge
 import Geometry.Triangle
 import Model exposing (DelaunayTriangle, Edge, Model, Point, Triangle)
@@ -22,7 +22,7 @@ retriangulatePolygonalHole point edges triangles =
         triangles
         (List.map
             (\edge ->
-                getDelaunayTriangle (Geometry.Triangle.retriangulate point edge)
+                Geometry.Triangle.getDelaunayTriangle (Geometry.Triangle.retriangulate point edge)
             )
             edges
         )

@@ -1,5 +1,6 @@
 module Geometry.Triangle exposing (..)
 
+import Geometry.Distance
 import Geometry.Edge
 import Geometry.Point
 import Geometry.Util
@@ -129,3 +130,18 @@ compareTriangle a b =
         True
     else
         False
+
+
+{-| Turns a triangle into a DelaunayTriangle which
+contains information about the circumcenter and radius.
+-}
+getDelaunayTriangle : Triangle -> Model.DelaunayTriangle
+getDelaunayTriangle tri =
+    let
+        circCenter =
+            findCircumcenter tri
+    in
+    Model.Circle
+        circCenter
+        (Geometry.Distance.distanceEuclidean (Maybe.withDefault (vec2 0 0) circCenter) tri.a.pos)
+        |> Model.DelaunayTriangle tri

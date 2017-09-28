@@ -93,40 +93,19 @@ drawCircle del =
 
 defaultTriangles : List DelaunayTriangle
 defaultTriangles =
-    [ getDelaunayTriangle
+    [ Geometry.Triangle.getDelaunayTriangle
         (Triangle
             (Point (vec2 0 0) Nothing)
             (Point (vec2 0 Constants.size) Nothing)
             (Point (vec2 Constants.size Constants.size) Nothing)
         )
-    , getDelaunayTriangle
+    , Geometry.Triangle.getDelaunayTriangle
         (Triangle
             (Point (vec2 0 0) Nothing)
             (Point (vec2 Constants.size 0) Nothing)
             (Point (vec2 Constants.size Constants.size) Nothing)
         )
     ]
-
-
-getMinAndMax : List Point -> (Point -> Float) -> { min : Float, max : Float }
-getMinAndMax points getVal =
-    let
-        sorted =
-            List.sortBy (\x -> getVal x) points
-
-        min : Point
-        min =
-            Maybe.withDefault
-                (Point (vec2 0 0) Nothing)
-                (List.head sorted)
-
-        max : Point
-        max =
-            Maybe.withDefault
-                (Point (vec2 Constants.size Constants.size) Nothing)
-                (List.reverse sorted |> List.head)
-    in
-    { min = getVal min, max = getVal max }
 
 
 {-| Returns the points comprising the triangle.
@@ -137,21 +116,6 @@ getPoints triangle =
     , triangle.triangle.b
     , triangle.triangle.c
     ]
-
-
-{-| Turns a triangle into a DelaunayTriangle which
-contains information about the circumcenter and radius.
--}
-getDelaunayTriangle : Triangle -> DelaunayTriangle
-getDelaunayTriangle tri =
-    let
-        circCenter =
-            Geometry.Triangle.findCircumcenter tri
-    in
-    Circle
-        circCenter
-        (distanceEuclidean (Maybe.withDefault (vec2 0 0) circCenter) tri.a.pos)
-        |> DelaunayTriangle tri
 
 
 {-| Checks if a DelaunayTriangle's circle contains a point or not.
