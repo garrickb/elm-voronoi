@@ -190,23 +190,12 @@ solveSlopeInterceptForB point slope =
 -}
 findCircumcenter : Vec2 -> Vec2 -> Vec2 -> Maybe Vec2
 findCircumcenter a b c =
-    -- Try every combination just in case...
-    -- TODO - clean this up
+    -- TODO - Find a better way
     case circumcenter a c b of
         Nothing ->
             case circumcenter b a c of
                 Nothing ->
-                    case circumcenter b c a of
-                        Nothing ->
-                            case circumcenter c a b of
-                                Nothing ->
-                                    circumcenter c b a
-
-                                Just center ->
-                                    Just center
-
-                        Just center ->
-                            Just center
+                    circumcenter b c a
 
                 Just center ->
                     Just center
@@ -219,7 +208,6 @@ findCircumcenter a b c =
 -}
 circumcenter : Vec2 -> Vec2 -> Vec2 -> Maybe Vec2
 circumcenter a b c =
-    -- TODO - Cleanup function. There's gotta be a cleaner way.
     let
         -- AB
         slopeAB : Maybe Float
@@ -239,49 +227,19 @@ circumcenter a b c =
         slopeInterceptBC =
             solveSlopeInterceptForB (midpoint b c) slopeBC
 
+        -- Solve for x
         x : Maybe Float
         x =
-            case slopeInterceptAB of
-                Nothing ->
-                    Nothing
-
-                Just siAB ->
-                    case slopeInterceptBC of
-                        Nothing ->
-                            Nothing
-
-                        Just siBC ->
-                            case slopeBC of
-                                Nothing ->
-                                    Nothing
-
-                                Just slBC ->
-                                    case slopeAB of
-                                        Nothing ->
-                                            Nothing
-
-                                        Just slAB ->
-                                            Just ((siAB - siBC) / (slBC - slAB))
+            Maybe.map4 (\siAB siBC slBC slAB -> (siAB - siBC) / (slBC - slAB))
+                slopeInterceptAB
+                slopeInterceptBC
+                slopeBC
+                slopeAB
     in
-    case x of
-        Nothing ->
-            Nothing
-
-        Just x ->
-            case slopeAB of
-                Nothing ->
-                    Nothing
-
-                Just sAB ->
-                    case slopeInterceptAB of
-                        Nothing ->
-                            Nothing
-
-                        Just siAB ->
-                            Just
-                                (vec2 x
-                                    (sAB * x + siAB)
-                                )
+    Maybe.map3 (\x sAB siAB -> vec2 x (sAB * x + siAB))
+        x
+        slopeAB
+        slopeInterceptAB
 
 
 {-| Checks if a DelaunayTriangle's circle contains a point or not.
