@@ -1,3 +1,6 @@
+-- Borrowed from: eskimoblood/elm-color-extra
+
+
 module ColorHelper exposing (..)
 
 import Char

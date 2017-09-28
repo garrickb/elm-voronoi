@@ -6,6 +6,16 @@ import Geometry.Triangle
 import Model exposing (DelaunayTriangle, Edge, Model, Point, Triangle)
 
 
+{-| (Assuming a basic understanding of the Bowyer Watson algorithm)
+We start off with our default triangles if our triangle list passed is
+empty. Otherwise we add it to the existing list.
+
+When we add the point, we are going to remove the bad triangles and
+re-triangulate the polygonal hole created by the freshly added point.
+We do that by connecting the point to the unique edges of the bad
+triangles.
+
+-}
 performOnPoint : Point -> List DelaunayTriangle -> List DelaunayTriangle
 performOnPoint point triangles =
     if triangles == [] then
@@ -16,6 +26,8 @@ performOnPoint point triangles =
             |> retriangulatePolygonalHole point (badTriangleEdges point triangles)
 
 
+{-| Connect the pont to every edge, and add it into the list of triangles.
+-}
 retriangulatePolygonalHole : Point -> List Edge -> List DelaunayTriangle -> List DelaunayTriangle
 retriangulatePolygonalHole point edges triangles =
     List.append
@@ -34,6 +46,10 @@ retriangulatePolygonalHole point edges triangles =
 
 {-| Returns ONLY unique edges between all of the bad triangles
 found in the triangle list.
+
+For example, if two triangles share an edge, then the edge is NOT included.
+However, if an edge is included only once, then it is included.
+
 -}
 badTriangleEdges : Point -> List DelaunayTriangle -> List Edge
 badTriangleEdges point triangles =
