@@ -1,4 +1,4 @@
-module Distance exposing (..)
+module Geometry.Distance exposing (..)
 
 import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (Distance, Point)

@@ -3,11 +3,11 @@ module Delaunay.Triangle exposing (..)
 import Color exposing (rgb)
 import ColorHelper exposing (colorToHex)
 import Constants exposing (size)
-import Distance exposing (distanceEuclidean)
-import Edge
+import Geometry.Distance exposing (distanceEuclidean)
+import Geometry.Edge
+import Geometry.Point exposing (pointToString)
 import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (Circle, DelaunayTriangle, Edge, Model, Point, Triangle)
-import Point exposing (pointToString)
 import Svg exposing (Svg, g, polyline)
 import Svg.Attributes exposing (cx, cy, fill, r, stroke, strokeWidth)
 
@@ -281,7 +281,7 @@ triangleToString tri =
 -}
 triangleHasEdge : Triangle -> Edge -> Bool
 triangleHasEdge triangle edge =
-    List.any (Edge.isEqual edge) (getEdges triangle)
+    List.any (Geometry.Edge.isEqual edge) (getEdges triangle)
 
 
 {-| Returns true if the triangles have all three edges in common.

@@ -1,4 +1,4 @@
-module Point exposing (..)
+module Geometry.Point exposing (..)
 
 import Color
 import ColorHelper exposing (colorToHex)

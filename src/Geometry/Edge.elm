@@ -1,4 +1,4 @@
-module Edge exposing (..)
+module Geometry.Edge exposing (..)
 
 import Model exposing (Edge, Triangle)
 

@@ -2,11 +2,11 @@ module View exposing (..)
 
 import Constants
 import Delaunay.Triangle exposing (drawDelaunay)
+import Geometry.Point exposing (..)
 import Html exposing (..)
 import Html.Attributes
 import Html.Events
 import Model exposing (Circle, DelaunayTriangle, Distance, Model, Point, Triangle)
-import Point exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (height, viewBox, width)
 import Update

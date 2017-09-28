@@ -3,9 +3,9 @@ module Delaunay.BowyerWatson exposing (performOnPoint)
 import Color
 import Constants
 import Delaunay.Triangle exposing (containsPoint, getDelaunayTriangle)
-import Edge
+import Geometry.Edge
+import Geometry.Point exposing (getPoint)
 import Model exposing (DelaunayTriangle, Edge, Model, Point, Triangle)
-import Point
 
 
 performOnPoint : Point -> List DelaunayTriangle -> List DelaunayTriangle
@@ -14,15 +14,15 @@ performOnPoint point triangles =
         defaultTriangles =
             [ getDelaunayTriangle
                 (Triangle
-                    (Point.getPoint 0 0)
-                    (Point.getPoint 0 Constants.size)
-                    (Point.getPoint Constants.size Constants.size)
+                    (getPoint 0 0)
+                    (getPoint 0 Constants.size)
+                    (getPoint Constants.size Constants.size)
                 )
             , getDelaunayTriangle
                 (Triangle
-                    (Point.getPoint 0 0)
-                    (Point.getPoint Constants.size 0)
-                    (Point.getPoint Constants.size Constants.size)
+                    (getPoint 0 0)
+                    (getPoint Constants.size 0)
+                    (getPoint Constants.size Constants.size)
                 )
             ]
     in
@@ -75,7 +75,7 @@ badTriangleEdges point triangles =
         (\tri -> Delaunay.Triangle.getEdges tri.triangle)
         (badTriangles point triangles)
         |> List.concat
-        |> Edge.getUnique
+        |> Geometry.Edge.getUnique
 
 
 {-| Returns triangles that contain the point.
