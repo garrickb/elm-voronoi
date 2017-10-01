@@ -10,10 +10,19 @@ import Color exposing (Color)
 colorToHex : Color -> String
 colorToHex cl =
     let
-        { red, green, blue, alpha } =
+        color =
             Color.toRgb cl
+
+        r =
+            min color.red 255
+
+        b =
+            min color.blue 255
+
+        g =
+            min color.green 255
     in
-    "#" ++ toHex red ++ toHex green ++ toHex blue
+    "#" ++ toHex r ++ toHex g ++ toHex b
 
 
 toHex : Int -> String

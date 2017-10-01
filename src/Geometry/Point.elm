@@ -5,7 +5,7 @@ import ColorHelper exposing (colorToHex)
 import Constants exposing (..)
 import Math.Vector2 exposing (getX, getY, vec2)
 import Model exposing (Model, Point)
-import Svg exposing (Svg, line, rect)
+import Svg exposing (Svg, circle, line, rect)
 import Svg.Attributes exposing (..)
 
 
@@ -19,11 +19,12 @@ drawPoints model =
 
 draw : Point -> Svg msg
 draw point =
+    -- TODO: Don't draw maybe point
     let
         color =
             Color.toRgb (Maybe.withDefault (Color.rgb 255 255 255) point.color)
     in
-    Svg.circle
+    circle
         [ cx <| Basics.toString <| getX point.pos
         , cy <| Basics.toString <| getY point.pos
         , r "4"
@@ -42,6 +43,15 @@ draw point =
 
 
 -- Controller
+
+
+roundPoint : Point -> Point
+roundPoint point =
+    Point
+        (vec2 (Basics.toFloat (round (getX point.pos)))
+            (Basics.toFloat (round (getY point.pos)))
+        )
+        point.color
 
 
 toString : Point -> String

@@ -1,13 +1,11 @@
 module Delaunay.Triangle exposing (..)
 
-import Color exposing (rgb)
-import ColorHelper exposing (colorToHex)
 import Constants exposing (size)
 import Geometry.Distance exposing (distanceEuclidean)
 import Geometry.Triangle
 import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (Circle, DelaunayTriangle, Edge, Model, Point, Triangle)
-import Svg exposing (Svg, g, polyline)
+import Svg exposing (Svg, g)
 import Svg.Attributes exposing (cx, cy, fill, r, stroke, strokeWidth)
 
 
@@ -16,9 +14,7 @@ import Svg.Attributes exposing (cx, cy, fill, r, stroke, strokeWidth)
 
 drawDelaunay : List DelaunayTriangle -> List (Svg msg)
 drawDelaunay del =
-    [ drawTriangles del
-    , drawCircles del
-    ]
+    [ drawTriangles del ]
 
 
 drawTriangles : List DelaunayTriangle -> Svg msg
@@ -31,35 +27,9 @@ drawTriangles del =
         )
 
 
-averageTriangleColor : Triangle -> String
-averageTriangleColor tri =
-    let
-        a =
-            Color.toRgb (Maybe.withDefault (Color.rgb 255 255 255) tri.a.color)
-
-        b =
-            Color.toRgb (Maybe.withDefault (Color.rgb 255 255 255) tri.b.color)
-
-        c =
-            Color.toRgb (Maybe.withDefault (Color.rgb 255 255 255) tri.c.color)
-    in
-    colorToHex
-        (Color.rgb
-            (round (sqrt (Basics.toFloat ((a.red + b.red + c.red) ^ 2) / 3)))
-            (round (sqrt (Basics.toFloat ((a.green + b.green + c.green) ^ 2) / 3)))
-            (round (sqrt (Basics.toFloat ((a.blue + b.blue + c.blue) ^ 2) / 3)))
-        )
-
-
 drawTriangle : DelaunayTriangle -> Svg msg
 drawTriangle del =
-    polyline
-        [ fill "none"
-        , stroke "black"
-        , strokeWidth "1"
-        , Svg.Attributes.points (Geometry.Triangle.toString del.triangle)
-        ]
-        []
+    Geometry.Triangle.draw del.triangle
 
 
 drawCircles : List DelaunayTriangle -> Svg msg
@@ -73,6 +43,7 @@ drawCircle : DelaunayTriangle -> Svg msg
 drawCircle del =
     case del.circle.center of
         Nothing ->
+            -- TODO: Return a maybe Svg.
             g [] []
 
         Just center ->
@@ -89,6 +60,37 @@ drawCircle del =
 
 
 -- Controller
+
+
+{-| Returns true if the triangles share at least one edge.
+-}
+isNeighbor : DelaunayTriangle -> DelaunayTriangle -> Bool
+isNeighbor a b =
+    List.any
+        (Geometry.Triangle.hasEdge a.triangle)
+        (Geometry.Triangle.getEdges b.triangle)
+
+
+{-| Returns a list of all triangles that are neighbors to the passed triangle.
+-}
+neighbors : DelaunayTriangle -> List DelaunayTriangle -> List DelaunayTriangle
+neighbors triangle triangles =
+    let
+        -- Don't consider yourself a neighbor.
+        trianglesMinusSelf =
+            List.filter
+                (\x ->
+                    Basics.not
+                        (Geometry.Triangle.compareTriangle
+                            triangle.triangle
+                            x.triangle
+                        )
+                )
+                triangles
+    in
+    List.filter
+        (isNeighbor triangle)
+        trianglesMinusSelf
 
 
 defaultTriangles : List DelaunayTriangle

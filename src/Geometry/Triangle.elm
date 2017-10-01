@@ -1,11 +1,26 @@
 module Geometry.Triangle exposing (..)
 
+import Color
+import ColorHelper
 import Geometry.Distance
 import Geometry.Edge
 import Geometry.Point
 import Geometry.Util
-import Math.Vector2 exposing (Vec2, vec2)
+import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (Edge, Point, Triangle)
+import Svg exposing (Svg, polyline)
+import Svg.Attributes exposing (..)
+
+
+draw : Triangle -> Svg msg
+draw triangle =
+    polyline
+        [ fill "none"
+        , stroke "gray"
+        , strokeWidth "0.1"
+        , points (toString triangle)
+        ]
+        []
 
 
 {-| Connects a point to an edge, forming a triangle.
@@ -13,8 +28,8 @@ import Model exposing (Edge, Point, Triangle)
 retriangulate : Point -> Edge -> Triangle
 retriangulate point edge =
     Triangle
-        (Point edge.a Nothing)
-        (Point edge.b Nothing)
+        edge.a
+        edge.b
         point
 
 
@@ -96,9 +111,9 @@ circumcenter triangle =
 -}
 getEdges : Triangle -> List Edge
 getEdges triangle =
-    [ Edge triangle.a.pos triangle.b.pos
-    , Edge triangle.b.pos triangle.c.pos
-    , Edge triangle.a.pos triangle.c.pos
+    [ Edge triangle.a triangle.b
+    , Edge triangle.b triangle.c
+    , Edge triangle.a triangle.c
     ]
 
 
@@ -117,16 +132,35 @@ toString tri =
 
 {-| Returns true if the triangle contains the edge passed as a parameter.
 -}
-triangleHasEdge : Triangle -> Edge -> Bool
-triangleHasEdge triangle edge =
+hasEdge : Triangle -> Edge -> Bool
+hasEdge triangle edge =
     List.any (Geometry.Edge.isEqual edge) (getEdges triangle)
+
+
+{-| Returns true if the triangles share at least one edge.
+-}
+isNeighbor : Triangle -> Triangle -> Bool
+isNeighbor a b =
+    List.any (hasEdge a) (getEdges b)
+
+
+{-| Returns a list of all triangles that are neighbors to the passed triangle.
+-}
+neighbors : Triangle -> List Triangle -> List Triangle
+neighbors triangle triangles =
+    let
+        -- Don't consider yourself a neighbor.
+        trianglesMinusSelf =
+            List.filter (\x -> Basics.not (compareTriangle triangle x)) triangles
+    in
+    List.filter (isNeighbor triangle) trianglesMinusSelf
 
 
 {-| Returns true if the triangles have all three edges in common.
 -}
 compareTriangle : Triangle -> Triangle -> Bool
 compareTriangle a b =
-    if List.all (triangleHasEdge a) (getEdges b) then
+    if List.all (hasEdge a) (getEdges b) then
         True
     else
         False
@@ -145,3 +179,23 @@ getDelaunayTriangle tri =
         circCenter
         (Geometry.Distance.distanceEuclidean (Maybe.withDefault (vec2 0 0) circCenter) tri.a.pos)
         |> Model.DelaunayTriangle tri
+
+
+averageColor : Triangle -> String
+averageColor tri =
+    let
+        a =
+            Color.toRgb (Maybe.withDefault (Color.rgb 255 255 255) tri.a.color)
+
+        b =
+            Color.toRgb (Maybe.withDefault (Color.rgb 255 255 255) tri.b.color)
+
+        c =
+            Color.toRgb (Maybe.withDefault (Color.rgb 255 255 255) tri.c.color)
+    in
+    ColorHelper.colorToHex
+        (Color.rgb
+            (round (sqrt (Basics.toFloat ((a.red + b.red + c.red) ^ 2) / 3)))
+            (round (sqrt (Basics.toFloat ((a.green + b.green + c.green) ^ 2) / 3)))
+            (round (sqrt (Basics.toFloat ((a.blue + b.blue + c.blue) ^ 2) / 3)))
+        )

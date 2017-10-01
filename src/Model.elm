@@ -10,7 +10,11 @@ type alias Point =
 
 
 type alias Edge =
-    { a : Vec2, b : Vec2 }
+    { a : Point, b : Point }
+
+
+type alias VoronoiPolygon =
+    { edges : List Edge, color : Maybe Color }
 
 
 type alias DelaunayTriangle =

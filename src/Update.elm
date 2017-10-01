@@ -3,14 +3,15 @@ module Update exposing (..)
 import Color exposing (Color)
 import Constants
 import Delaunay.BowyerWatson
-import Math.Vector2 exposing (Vec2, vec2)
+import Geometry.Point
+import Math.Vector2 exposing (Vec2, getX, getY, vec2)
 import Model exposing (..)
 import Random.Pcg exposing (..)
 
 
 type Msg
     = ToggleDistance
-    | AddPoint ( Point, Seed )
+    | AddPoint
 
 
 update : Msg -> Model -> Model
@@ -27,8 +28,8 @@ update msg model =
                 Chebyshev ->
                     { model | distance = Euclidean }
 
-        AddPoint data ->
-            addPoint data model |> updateSeed data
+        AddPoint ->
+            addPoint (getRandomUniquePoint model) model
 
 
 addPoint : ( Point, Seed ) -> Model -> Model
@@ -48,9 +49,40 @@ updateSeed random model =
     { model | seed = Tuple.second random }
 
 
+{-| Get a random point that is not being occupied by another point.
+-}
+getRandomUniquePoint : Model -> ( Point, Seed )
+getRandomUniquePoint model =
+    let
+        point =
+            randomPoint model
+    in
+    if pointIsUnique model.points (Tuple.first point) then
+        -- Make sure to change the seed
+        -- so we don't keep trying the same point.
+        getRandomUniquePoint (model |> updateSeed point)
+    else
+        point
+
+
+{-| Checks if a list of points contains a point's current location.
+-}
+pointIsUnique : List Point -> Point -> Bool
+pointIsUnique points newPoint =
+    List.any (\point -> point.pos == newPoint.pos) points
+
+
 randomPoint : Model -> ( Point, Seed )
 randomPoint model =
-    step pointGenerator model.seed
+    let
+        ( point, seed ) =
+            step pointGenerator model.seed
+    in
+    ( Geometry.Point.roundPoint point, seed )
+
+
+
+-- Generators
 
 
 pointGenerator : Generator Point
