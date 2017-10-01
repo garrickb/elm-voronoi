@@ -40,7 +40,7 @@ addPoint random model =
     in
     { model
         | points = point :: model.points
-        , triangles = Delaunay.BowyerWatson.performOnPoint point model.triangles
+        , triangles = Delaunay.BowyerWatson.addPoint point model.triangles
     }
 
 

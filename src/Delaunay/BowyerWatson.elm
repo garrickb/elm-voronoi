@@ -1,4 +1,4 @@
-module Delaunay.BowyerWatson exposing (performOnPoint)
+module Delaunay.BowyerWatson exposing (addPoint)
 
 import Delaunay.Triangle exposing (containsPoint)
 import Geometry.Edge
@@ -16,8 +16,8 @@ We do that by connecting the point to the unique edges of the bad
 triangles.
 
 -}
-performOnPoint : Point -> List DelaunayTriangle -> List DelaunayTriangle
-performOnPoint point triangles =
+addPoint : Point -> List DelaunayTriangle -> List DelaunayTriangle
+addPoint point triangles =
     if triangles == [] then
         goodTriangles point Delaunay.Triangle.defaultTriangles
             |> retriangulatePolygonalHole point (badTriangleEdges point Delaunay.Triangle.defaultTriangles)

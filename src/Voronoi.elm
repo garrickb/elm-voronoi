@@ -27,6 +27,9 @@ drawVoronoi voronoi =
         []
 
 
+{-| Returns the points of a VoronoiPolygon in String form for drawing
+the triangle in Svg using a polyline.
+-}
 toString : VoronoiPolygon -> String
 toString voronoi =
     String.concat (List.intersperse " " (List.map (\edge -> Geometry.Edge.toString edge) voronoi.edges))
@@ -37,31 +40,29 @@ to it's neighboring triangle's circumcenter.
 -}
 get : Model -> List VoronoiPolygon
 get model =
-    getTriangles model.triangles
+    getVoronoi model.triangles
 
 
-neighbors : List DelaunayTriangle -> List DelaunayTriangle
-neighbors triangles =
+{-| Calls the getVoronoiRecurse function on the first triangle in the list.
+This methods excludes the triangle from all future calls.
+-}
+getVoronoi : List DelaunayTriangle -> List VoronoiPolygon
+getVoronoi triangles =
     Maybe.withDefault []
         (Maybe.map2
-            Delaunay.Triangle.neighbors
+            (getVoronoiRecurse [])
             (List.head triangles)
             (List.tail triangles)
         )
 
 
-getTriangles : List DelaunayTriangle -> List VoronoiPolygon
-getTriangles triangles =
-    Maybe.withDefault []
-        (Maybe.map2
-            (getTriangleRecurse [])
-            (List.head triangles)
-            (List.tail triangles)
-        )
-
-
-getTriangleRecurse : List VoronoiPolygon -> DelaunayTriangle -> List DelaunayTriangle -> List VoronoiPolygon
-getTriangleRecurse voronoi triangle triangles =
+{-| Recursively calls itself until there are no more triangles left.
+This method will avoid re-creating edges that are already created by
+not including the triangle operated on in the future calls, making it
+so that it's no longer the neighbor for any other triangles.
+-}
+getVoronoiRecurse : List VoronoiPolygon -> DelaunayTriangle -> List DelaunayTriangle -> List VoronoiPolygon
+getVoronoiRecurse voronoi triangle triangles =
     let
         neighbors =
             Delaunay.Triangle.neighbors triangle triangles
@@ -70,17 +71,21 @@ getTriangleRecurse voronoi triangle triangles =
         [ VoronoiPolygon (List.filterMap (connectTriangles triangle) triangles) Nothing ]
         (Maybe.withDefault voronoi
             (Maybe.map2
-                (getTriangleRecurse voronoi)
+                (getVoronoiRecurse voronoi)
                 (List.head triangles)
                 (List.tail triangles)
             )
         )
 
 
+{-| Connects two DelaunayTriangles together by their circumcenters.
+Returns the edge between the cirumcenters.
+-}
 connectTriangles : DelaunayTriangle -> DelaunayTriangle -> Maybe Edge
 connectTriangles a b =
     if Delaunay.Triangle.isNeighbor a b then
-        Maybe.map2 (\centerA centerB -> Edge (Point centerA Nothing) (Point centerB Nothing))
+        Maybe.map2
+            (\centerA centerB -> Edge (Point centerA Nothing) (Point centerB Nothing))
             a.circle.center
             b.circle.center
     else

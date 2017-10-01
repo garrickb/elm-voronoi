@@ -7,6 +7,9 @@ import Char
 import Color exposing (Color)
 
 
+{-| Turns an RGB Color (ex. [255, 255, 255]) into
+a string value (ex. #FFFFFF).
+-}
 colorToHex : Color -> String
 colorToHex cl =
     let

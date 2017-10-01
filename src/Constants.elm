@@ -18,7 +18,7 @@ lineWidth =
 
 svgSize : number
 svgSize =
-    500
+    2000
 
 
 size : number

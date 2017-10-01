@@ -18,7 +18,7 @@ view model =
         [ h2 []
             [ Html.text "Voronoi Diagram" ]
         , h4 []
-            [ Html.text "Deduced from a Delaunay Triangulation using Bowyer Watson algorithm" ]
+            [ Html.text "Obtained from the dual of the Delaunay Triangulation found via the Bowyer Watson algorithm" ]
         , div []
             [ svg
                 [ width (Basics.toString Constants.viewSize)

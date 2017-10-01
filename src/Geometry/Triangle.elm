@@ -118,7 +118,7 @@ getEdges triangle =
 
 
 {-| Returns the points of a triangle in String form for drawing
-the triangle in Svg
+the triangle in Svg using a polyline.
 
 returns: [x1,y1 x2,y2 x3,y3 x1,y1]
 

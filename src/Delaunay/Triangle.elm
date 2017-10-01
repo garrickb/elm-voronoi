@@ -93,6 +93,9 @@ neighbors triangle triangles =
         trianglesMinusSelf
 
 
+{-| Returns the 'supertriangle' that encompasses all of our valid points
+that we will be adding.
+-}
 defaultTriangles : List DelaunayTriangle
 defaultTriangles =
     [ Geometry.Triangle.getDelaunayTriangle
